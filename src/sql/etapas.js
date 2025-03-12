@@ -1,3 +1,6 @@
+//--------------------------------------------------------
+//CLASE PARA MANEJAR LAS CONSULTAS DE LAS ETAPAS
+//--------------------------------------------------------
 import { sqlConfig } from './configDB.js'
 import sql from 'mssql'
 
@@ -21,7 +24,9 @@ export class Etapas {
         this.connection = await sql.close()
         console.log('Conexion cerrada!!')
       }
-    } catch (error) {}
+    } catch (err) {
+      console.log('Error al cerrar la conexion', err)
+    }
   }
 
   async selectAll() {
@@ -48,17 +53,21 @@ export class Etapas {
 
       // Retorna el Id generado en el nuevo registro insertado
       return resultado.recordset[0].EtapaId
-    } catch (error) {
+    } catch (err) {
       console.error('Error al crear una nueva etapa!!:', err)
     }
   }
 }
 
-// // PROBANDO LA CLASE
-// ;(async () => {
-//   const etapas = new Etapas()
-//   await etapas.connect() // Abrir conexión una sola vez
-//   const etapasList = await etapas.selectAll()
-//   console.log(etapasList)
-//   await etapas.close() // Cerrar conexión al finalizar
-// })()
+// PROBANDO LA CLASE
+;(async () => {
+  const etapas = new Etapas()
+  await etapas.connect() // Abrir conexión una sola vez
+  const iniciarEtapa = await etapas.iniciar({
+    desarrolloProducto: 10,
+    etapa: 2,
+    usuario: 826
+  })
+  console.log(iniciarEtapa)
+  await etapas.close() // Cerrar conexión al finalizar
+})()

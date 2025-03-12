@@ -1,7 +1,10 @@
+//--------------------------------------------------------
+//CLASE PARA MANEJAR LAS CONSULTAS DE LOS NUEVOS PRODUCTOS
+//--------------------------------------------------------
 import { sqlConfig } from './configDB.js'
 import sql from 'mssql'
 
-export class NuevoProducto {
+export class Producto {
   constructor() {
     this.connection = null
   }
@@ -84,20 +87,20 @@ export class NuevoProducto {
     }
   }
 
-  async asingarEtapas({ desarrolloProducto, etapaId, estado = null }) {
+  async asingarEtapa({ desarrolloProducto, etapaId, estado = null }) {
     try {
       const request = new sql.Request()
         .input('DesarrolloProducto', sql.Int, desarrolloProducto)
         .input('EtapaId', sql.Int, etapaId)
         .input('Estado', sql.Int, estado)
 
-      const resultado = request.query(`
+      const resultado = await request.query(`
           INSERT INTO IND_ETAPAS_ASIGNADAS (DesarrolloProducto, EtapaId)
           VALUES (@DesarrolloProducto, @EtapaId)
       `)
 
-      return await resultado
-    } catch (error) {
+      return resultado
+    } catch (err) {
       console.error('Error al asignar las etapas del nuevo producto :', err)
     }
   }
