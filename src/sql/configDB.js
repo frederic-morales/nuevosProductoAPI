@@ -1,5 +1,5 @@
 import { config } from 'dotenv'
-import { process } from 'node'
+import process from 'node:process'
 
 config()
 

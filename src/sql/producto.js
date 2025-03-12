@@ -4,15 +4,16 @@
 import { sqlConfig } from './configDB.js'
 import sql from 'mssql'
 
-export class Producto {
+export class NuevoProducto {
   constructor() {
+    this.sqlConfig = sqlConfig
     this.connection = null
   }
 
   // Abrir la conexion a la DB
   async connect() {
     try {
-      this.connection = await sql.connect(sqlConfig)
+      this.connection = await sql.connect(this.sqlConfig)
       console.log('Conexión establecida!!')
     } catch (err) {
       console.error('Error al conectar:', err)
@@ -31,17 +32,21 @@ export class Producto {
     }
   }
 
-  async selectAll() {
+  async getAll() {
     try {
+      await this.connect()
       const result = await sql.query`SELECT * FROM IND_DESARROLLO_PRODUCTOS`
       return result.recordset
     } catch (err) {
-      console.error('Error al traer los Productos:', err)
+      console.error('Error al traer los Productos!!:', err)
+    } finally {
+      await this.close()
     }
   }
 
   async insert({ nombre = null, descripcion = null }) {
     try {
+      await this.connect()
       const request = new sql.Request()
         .input('Nombre', sql.VarChar(100), nombre)
         .input('Descripcion', sql.VarChar(255), descripcion)
@@ -55,6 +60,8 @@ export class Producto {
       return resultado.recordset[0].DesarrolloProductoId // Retorna el Id generado en el nuevo registro insertado
     } catch (err) {
       console.error('Error trying to connect:', err)
+    } finally {
+      await this.close()
     }
   }
 
@@ -89,6 +96,7 @@ export class Producto {
 
   async asingarEtapa({ desarrolloProducto, etapaId, estado = null }) {
     try {
+      await this.connect()
       const request = new sql.Request()
         .input('DesarrolloProducto', sql.Int, desarrolloProducto)
         .input('EtapaId', sql.Int, etapaId)
@@ -102,6 +110,8 @@ export class Producto {
       return resultado
     } catch (err) {
       console.error('Error al asignar las etapas del nuevo producto :', err)
+    } finally {
+      await this.close()
     }
   }
 }

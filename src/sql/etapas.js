@@ -6,12 +6,13 @@ import sql from 'mssql'
 
 export class Etapas {
   constructor() {
+    this.sqlConfig = sqlConfig
     this.connection = null
   }
 
   async connect() {
     try {
-      this.connection = await sql.connect(sqlConfig)
+      this.connection = await sql.connect(this.sqlConfig)
       console.log('Conexión establecida!!')
     } catch (err) {
       console.error('Error al conectar:', err)
@@ -29,17 +30,21 @@ export class Etapas {
     }
   }
 
-  async selectAll() {
+  async getAll() {
     try {
+      await this.connect()
       const result = await sql.query`SELECT * FROM IND_ETAPAS`
       return result.recordset
     } catch (err) {
-      console.error('Error al traer las etapas!!:', err)
+      console.error('Error al traer las Etapas!!:', err)
+    } finally {
+      await this.close()
     }
   }
 
   async insert(nombre, descripcion = null, tiempoEstimado = null) {
     try {
+      await this.connect()
       const request = new sql.request()
         .input('Nombre', sql.VarChar(100), nombre)
         .input('Descripcion', sql.VarChar(255), descripcion)
@@ -55,19 +60,21 @@ export class Etapas {
       return resultado.recordset[0].EtapaId
     } catch (err) {
       console.error('Error al crear una nueva etapa!!:', err)
+    } finally {
+      await this.close()
     }
   }
 }
 
-// PROBANDO LA CLASE
-;(async () => {
-  const etapas = new Etapas()
-  await etapas.connect() // Abrir conexión una sola vez
-  const iniciarEtapa = await etapas.iniciar({
-    desarrolloProducto: 10,
-    etapa: 2,
-    usuario: 826
-  })
-  console.log(iniciarEtapa)
-  await etapas.close() // Cerrar conexión al finalizar
-})()
+// // PROBANDO LA CLASE
+// ;(async () => {
+//   const etapas = new Etapas()
+//   await etapas.connect() // Abrir conexión una sola vez
+//   const iniciarEtapa = await etapas.iniciar({
+//     desarrolloProducto: 10,
+//     etapa: 2,
+//     usuario: 826
+//   })
+//   console.log(iniciarEtapa)
+//   await etapas.close() // Cerrar conexión al finalizar
+// })()
