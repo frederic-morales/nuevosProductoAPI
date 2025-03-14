@@ -70,7 +70,7 @@ export class NuevoProducto {
     }
   }
 
-  async insert({ nombre, descripcion = null, estado = 1 }) {
+  async insert({ nombre, descripcion = null, estado = 3 }) {
     try {
       await this.connect()
       const request = new sql.Request()

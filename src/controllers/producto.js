@@ -8,10 +8,12 @@ export class Producto {
   server = async (req, res) => {
     res.status(200).json({ message: 'Server running' })
   }
+
   getAll = async (req, res) => {
     const productos = await nuevoProducto.getAll()
     res.status(200).json(productos)
   }
+
   getColumnas = async (req, res) => {
     const columnas = await nuevoProducto.getColumnas()
     res.status(200).json(columnas)
@@ -42,10 +44,8 @@ export class Producto {
       return res.status(400).json({ error: 'El array de etapas es requerido' })
     }
 
-    // Ejecutar todas las inserciones en paralelo con Promise.all()
     try {
       const resultados = []
-
       for (const etapa of etapas) {
         const { EtapaId } = etapa
         const res = await nuevoProducto.asingarEtapa({
