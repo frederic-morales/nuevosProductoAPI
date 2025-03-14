@@ -27,6 +27,7 @@ export class Producto {
         descripcion
       })
       console.log(nuevoProductoId)
+
       res.status(200).json({ nuevoProductoId: nuevoProductoId })
     } else {
       res.status(400).json({ error: 'Nombre y Descripcion son obligatorios' })
@@ -35,16 +36,24 @@ export class Producto {
 
   //ASIGNAR ETAPAS
   asignarEtapas = async (req, res) => {
-    const { etapas } = req.body
+    const { desarrolloProducto, etapas } = req.body
+    console.log(desarrolloProducto, etapas)
     if (!Array.isArray(etapas) || etapas.length === 0) {
       return res.status(400).json({ error: 'El array de etapas es requerido' })
     }
 
     // Ejecutar todas las inserciones en paralelo con Promise.all()
     try {
-      const resultados = await Promise.all(
-        etapas.map((etapa) => nuevoProducto.asingarEtapa(etapa))
-      )
+      const resultados = []
+
+      for (const etapa of etapas) {
+        const { EtapaId } = etapa
+        const res = await nuevoProducto.asingarEtapa({
+          desarrolloProducto,
+          EtapaId
+        })
+        resultados.push(res)
+      }
       res.status(201).json({
         mensaje: 'Todas las etapas fueron asignadas correctamente',
         resultados

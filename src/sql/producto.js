@@ -70,17 +70,18 @@ export class NuevoProducto {
     }
   }
 
-  async insert({ nombre, descripcion = null }) {
+  async insert({ nombre, descripcion = null, estado = 1 }) {
     try {
       await this.connect()
       const request = new sql.Request()
         .input('Nombre', sql.VarChar(100), nombre)
         .input('Descripcion', sql.VarChar(255), descripcion)
+        .input('Estado', sql.SmallInt, estado)
       // console.log(nombre, descripcion)
       const resultado = await request.query(`
-          INSERT INTO IND_DESARROLLO_PRODUCTOS (Nombre, Descripcion)
+          INSERT INTO IND_DESARROLLO_PRODUCTOS (Nombre, Descripcion, Estado)
           OUTPUT INSERTED.DesarrolloProductoId 
-          VALUES (@Nombre, @Descripcion)
+          VALUES (@Nombre, @Descripcion, @Estado)
           `)
       // console.log('Id generado: ', resultado.recordset[0].DesarrolloProductoId)
       console.log(
@@ -90,6 +91,25 @@ export class NuevoProducto {
       return resultado.recordset[0].DesarrolloProductoId // Retorna el Id generado en el nuevo registro insertado
     } catch (err) {
       console.error('Error trying to connect:', err)
+    } finally {
+      await this.close()
+    }
+  }
+
+  async asingarEtapa({ desarrolloProducto, EtapaId, estado = null }) {
+    try {
+      await this.connect()
+      const request = new sql.Request()
+        .input('DesarrolloProducto', sql.Int, desarrolloProducto)
+        .input('EtapaId', sql.Int, EtapaId)
+        .input('Estado', sql.Int, estado)
+      const resultado = await request.query(`
+          INSERT INTO IND_ETAPAS_ASIGNADAS (DesarrolloProducto, EtapaId)
+          VALUES (@DesarrolloProducto, @EtapaId)
+      `)
+      return resultado
+    } catch (err) {
+      console.error('Error al asignar las etapas del nuevo producto :', err)
     } finally {
       await this.close()
     }
@@ -120,25 +140,6 @@ export class NuevoProducto {
       console.log('Update: ', resultado) // Retorna el Id generado
     } catch (err) {
       console.error('Error al actualizar el Producto:', err)
-    }
-  }
-
-  async asingarEtapa({ desarrolloProducto, etapaId, estado = null }) {
-    try {
-      await this.connect()
-      const request = new sql.Request()
-        .input('DesarrolloProducto', sql.Int, desarrolloProducto)
-        .input('EtapaId', sql.Int, etapaId)
-        .input('Estado', sql.Int, estado)
-      const resultado = await request.query(`
-          INSERT INTO IND_ETAPAS_ASIGNADAS (DesarrolloProducto, EtapaId)
-          VALUES (@DesarrolloProducto, @EtapaId)
-      `)
-      return resultado
-    } catch (err) {
-      console.error('Error al asignar las etapas del nuevo producto :', err)
-    } finally {
-      await this.close()
     }
   }
 }
