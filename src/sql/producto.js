@@ -14,6 +14,7 @@ export class NuevoProducto {
   async connect() {
     try {
       this.connection = await sql.connect(this.sqlConfig)
+      console.log('----------------------')
       console.log('Conexión establecida!!')
     } catch (err) {
       console.error('Error al conectar:', err)
@@ -26,6 +27,7 @@ export class NuevoProducto {
       if (this.connection) {
         await this.connection.close()
         console.log('Conexión cerrada!!')
+        console.log('----------------------')
       }
     } catch (err) {
       console.error('Error al cerrar la conexión:', err)
@@ -44,19 +46,47 @@ export class NuevoProducto {
     }
   }
 
-  async insert({ nombre = null, descripcion = null }) {
+  async getColumnas() {
+    try {
+      await this.connect()
+      const resultado = await sql.query`
+          SELECT ORDINAL_POSITION, COLUMN_NAME, DATA_TYPE, IS_NULLABLE 
+          FROM INFORMATION_SCHEMA.COLUMNS 
+          WHERE TABLE_NAME = 'IND_DESARROLLO_PRODUCTOS'
+      `
+      const columns = resultado.recordset.map((row) => ({
+        ordinalPosition: row.ORDINAL_POSITION,
+        columnName: row.COLUMN_NAME,
+        dataType: row.DATA_TYPE,
+        isNullable: row.IS_NULLABLE === 'YES'
+      }))
+      // console.log(columns)
+      console.log('Traendo las columnas...')
+      return columns
+    } catch (err) {
+      console.error('Error al traer las columnas', err)
+    } finally {
+      await this.close()
+    }
+  }
+
+  async insert({ nombre, descripcion = null }) {
     try {
       await this.connect()
       const request = new sql.Request()
         .input('Nombre', sql.VarChar(100), nombre)
         .input('Descripcion', sql.VarChar(255), descripcion)
-
+      // console.log(nombre, descripcion)
       const resultado = await request.query(`
           INSERT INTO IND_DESARROLLO_PRODUCTOS (Nombre, Descripcion)
           OUTPUT INSERTED.DesarrolloProductoId 
           VALUES (@Nombre, @Descripcion)
           `)
       // console.log('Id generado: ', resultado.recordset[0].DesarrolloProductoId)
+      console.log(
+        'Insertando el Producto Nuevo...',
+        resultado.recordset[0].DesarrolloProductoId
+      )
       return resultado.recordset[0].DesarrolloProductoId // Retorna el Id generado en el nuevo registro insertado
     } catch (err) {
       console.error('Error trying to connect:', err)
@@ -81,7 +111,6 @@ export class NuevoProducto {
         .input('FechaFin', sql.Date, fechaFin)
         .input('TiempoEstimado', sql.Int, tiempoEstimado)
         .input('TiempoTotal', sql.Int, tiempoTotal)
-
       const resultado = await request.query(`
               UPDATE IND_DESARROLLO_PRODUCTOS 
               SET Estado = @Estado, Rechazos = @Rechazos, FechaFin = @FechaFin,
@@ -101,12 +130,10 @@ export class NuevoProducto {
         .input('DesarrolloProducto', sql.Int, desarrolloProducto)
         .input('EtapaId', sql.Int, etapaId)
         .input('Estado', sql.Int, estado)
-
       const resultado = await request.query(`
           INSERT INTO IND_ETAPAS_ASIGNADAS (DesarrolloProducto, EtapaId)
           VALUES (@DesarrolloProducto, @EtapaId)
       `)
-
       return resultado
     } catch (err) {
       console.error('Error al asignar las etapas del nuevo producto :', err)
