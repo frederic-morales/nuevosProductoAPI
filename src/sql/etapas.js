@@ -42,13 +42,12 @@ export class Etapas {
     }
   }
 
-  //Trae todas las etapas del producto dado
+  //TRAE TODAS LAS ETAPAS DEL PRODUCTO DADO
   async etapasPorProducto({ productoId }) {
     try {
       await this.connect()
       const request = new sql.Request()
       request.input('DesarrolloProducto', sql.Int, productoId)
-
       const resultado = await request.query(`
           SELECT A.DesarrolloProducto AS ProductoId, A.Estado, A.EtapasAsignadasId,
             E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
@@ -66,7 +65,35 @@ export class Etapas {
     }
   }
 
-  async insert(nombre, descripcion = null, tiempoEstimado = null) {
+  //TRAE TODA LA INFORMACION DE LA ETAPA SELECCIONADA
+  async historial({ etapaAsignadaId, productoId }) {
+    try {
+      await this.connect()
+      const request = new sql.Request()
+      request.input('DesarrolloProducto', sql.Int, productoId)
+      request.input('etapaAsignadaId', sql.Int, etapaAsignadaId)
+      const resultado = await request.query(`
+          SELECT A.DesarrolloProducto AS ProductoId, A.Estado, A.EtapasAsignadasId,
+            E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
+            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, 
+            H.Estado, H.RutaDoc, H.Descripcion, H.FechaActualizacion
+          FROM IND_ETAPAS E
+            JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
+            LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId
+            LEFT JOIN IND_PROGRESO_ETAPAS_HISTORIAL H ON H.ProgresoEtapa = P.ProgresoEtapaId
+          WHERE A.DesarrolloProducto = @DesarrolloProducto
+          AND A.EtapasAsignadasId = @EtapaAsignadaId
+        `)
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al traer las Etapas!!:', err)
+    } finally {
+      await this.close()
+    }
+  }
+
+  //INSERTA UNA NUEVA ETAPA
+  async insert({ nombre, descripcion = null, tiempoEstimado = null }) {
     try {
       await this.connect()
       const request = new sql.Request()

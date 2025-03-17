@@ -7,5 +7,6 @@ export const etapaRouter = () => {
   const router = Router()
   router.get('/etapa', etapa.server)
   router.get('/etapa/getAll', etapa.getAll)
+  router.get('/etapa/info/:id')
   return router
 }

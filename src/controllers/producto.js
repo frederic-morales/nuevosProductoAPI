@@ -48,9 +48,9 @@ export class Producto {
   asignarEtapas = async (req, res) => {
     const { desarrolloProducto, etapas } = req.body
     console.log(desarrolloProducto, etapas)
-    if (!Array.isArray(etapas) || etapas.length === 0) {
-      return res.status(400).json({ error: 'El array de etapas es requerido' })
-    }
+
+    if (!Array.isArray(etapas) || etapas.length === 0)
+      res.status(400).json({ error: 'El array de etapas es requerido' })
 
     try {
       const resultados = []
