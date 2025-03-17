@@ -42,17 +42,41 @@ export class Etapas {
     }
   }
 
+  //Trae todas las etapas del producto dado
+  async etapasPorProducto({ productoId }) {
+    try {
+      await this.connect()
+      const request = new sql.Request()
+      request.input('DesarrolloProducto', sql.Int, productoId)
+
+      const resultado = await request.query(`
+          SELECT A.DesarrolloProducto AS ProductoId, A.Estado, A.EtapasAsignadasId,
+            E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
+            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal 
+          FROM IND_ETAPAS E
+            JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
+            LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId
+          WHERE A.DesarrolloProducto = @DesarrolloProducto
+            `)
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al traer las Etapas!!:', err)
+    } finally {
+      await this.close()
+    }
+  }
+
   async insert(nombre, descripcion = null, tiempoEstimado = null) {
     try {
       await this.connect()
-      const request = new sql.request()
+      const request = new sql.Request()
         .input('Nombre', sql.VarChar(100), nombre)
         .input('Descripcion', sql.VarChar(255), descripcion)
         .input('TiempoEstimado', sql.Date, tiempoEstimado)
 
       const resultado = await request.query(`
           INSERT INTO IND_ETAPAS (Nombre, Descripcion, TiempoEstimado)
-          OUTPUT INSERTED.EtapaId 
+            OUTPUT INSERTED.EtapaId 
           VALUES (@Nombre, @Descripcion, @TiempoEstimado)
         `)
 
@@ -65,16 +89,3 @@ export class Etapas {
     }
   }
 }
-
-// // PROBANDO LA CLASE
-// ;(async () => {
-//   const etapas = new Etapas()
-//   await etapas.connect() // Abrir conexión una sola vez
-//   const iniciarEtapa = await etapas.iniciar({
-//     desarrolloProducto: 10,
-//     etapa: 2,
-//     usuario: 826
-//   })
-//   console.log(iniciarEtapa)
-//   await etapas.close() // Cerrar conexión al finalizar
-// })()

@@ -46,6 +46,23 @@ export class NuevoProducto {
     }
   }
 
+  async getInfo({ productoId }) {
+    try {
+      await this.connect()
+      const request = new sql.Request().input('ProductoId', sql.Int, productoId)
+      const resultado = await request.query(`
+          SELECT * 
+          FROM IND_DESARROLLO_PRODUCTOS
+          WHERE DesarrolloProductoId = @ProductoId
+        `)
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al traer la info del producto...', err)
+    } finally {
+      await this.close()
+    }
+  }
+
   async getColumnas() {
     try {
       await this.connect()

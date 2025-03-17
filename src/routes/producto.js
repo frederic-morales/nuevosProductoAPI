@@ -12,5 +12,7 @@ export const productoRouter = () => {
   router.get('/producto/getColumns', producto.getColumnas)
   router.post('/producto/create', producto.createProductoNuevo)
   router.post('/producto/asignarEtapas', producto.asignarEtapas)
+  router.get('/producto/:productoId', producto.getInfo)
+  router.get('/producto/:productoId/etapas', producto.getEtapas)
   return router
 }
