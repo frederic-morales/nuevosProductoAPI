@@ -1,23 +1,20 @@
 import express from 'express'
-import { productoRouter } from './routes/producto.js'
-import { etapaRouter } from './routes/etapa.js'
+import { producto_router } from './routes/producto.js'
+import { etapa_router } from './routes/etapa.js'
+import { usuario_router } from './routes/usuarios.js'
 import process from 'node:process'
 import cors from 'cors'
-// import { internalIpV4 } from 'internal-ip'
 
 const app = express()
 
 app.disable('x-powered-by')
 app.use(express.json())
 app.use(cors())
-app.use('/', productoRouter())
-app.use('/', etapaRouter())
+app.use('/', producto_router())
+app.use('/', etapa_router())
+app.use('/', usuario_router())
 
 const PORT = process.env.PORT || 3000
-
-// app.listen(PORT, () => {
-//   console.log(`Server listening on port http://localhost:${PORT}`)
-// })
 
 ;(async () => {
   // const ip = await internalIpV4() // Obtiene tu IP local automáticamente
