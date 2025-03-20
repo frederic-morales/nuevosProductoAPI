@@ -71,7 +71,8 @@ export class NuevoProducto {
           FROM INFORMATION_SCHEMA.COLUMNS 
           WHERE TABLE_NAME = 'IND_DESARROLLO_PRODUCTOS'
       `
-      const columns = resultado.recordset.map((row) => ({
+
+      const columns = await resultado.recordset.map((row) => ({
         ordinalPosition: row.ORDINAL_POSITION,
         columnName: row.COLUMN_NAME,
         dataType: row.DATA_TYPE,
@@ -87,20 +88,31 @@ export class NuevoProducto {
     }
   }
 
-  async insert({ nombre, descripcion = null, estado = 3 }) {
+  async insert({
+    nombre,
+    descripcion = null,
+    estado = 3,
+    rechazos = 0,
+    codigoEmpleado,
+    serie
+  }) {
     try {
       await this.connect()
       const request = new sql.Request()
         .input('Nombre', sql.VarChar(100), nombre)
         .input('Descripcion', sql.VarChar(255), descripcion)
         .input('Estado', sql.SmallInt, estado)
+        .input('Rechazos', sql.SmallInt, rechazos)
+        .input('CodigoEmpleado', sql.SmallInt, codigoEmpleado)
+        .input('Serie', sql.Char(1), serie)
       // console.log(nombre, descripcion)
       const resultado = await request.query(`
-          INSERT INTO IND_DESARROLLO_PRODUCTOS (Nombre, Descripcion, Estado)
+          INSERT INTO IND_DESARROLLO_PRODUCTOS (Nombre, Descripcion, Estado, Rechazos, CodigoEmpleado, Serie)
           OUTPUT INSERTED.DesarrolloProductoId 
-          VALUES (@Nombre, @Descripcion, @Estado)
+          VALUES (@Nombre, @Descripcion, @Estado, 0, @CodigoEmpleado, @Serie)
           `)
       // console.log('Id generado: ', resultado.recordset[0].DesarrolloProductoId)
+      console.log(codigoEmpleado)
       console.log(
         'Insertando el Producto Nuevo...',
         resultado.recordset[0].DesarrolloProductoId

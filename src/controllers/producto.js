@@ -21,7 +21,9 @@ export class Producto {
   getColumnas = async (req, res) => {
     try {
       const columnas = await nuevoProducto.getColumnas()
-      res.status(200).json(columnas)
+      if (columnas) {
+        res.status(200).json(columnas)
+      }
     } catch (err) {
       console.error('❌ Error al traer las columnas:', err)
       res.status(500).json({ error: 'Error al traer las columnas' })
@@ -30,12 +32,14 @@ export class Producto {
 
   //INICIAR UN PRODUCTO NUEVO
   createProductoNuevo = async (req, res) => {
-    const { nombre, descripcion } = req.body
+    const { nombre, descripcion, codigoEmpleado, serie } = req.body
     // console.log(req.body)
-    if (nombre && descripcion) {
+    if (nombre && descripcion && codigoEmpleado) {
       const nuevoProductoId = await nuevoProducto.insert({
         nombre,
-        descripcion
+        descripcion,
+        codigoEmpleado,
+        serie
       })
       console.log(nuevoProductoId)
       res.status(200).json({ nuevoProductoId: nuevoProductoId })

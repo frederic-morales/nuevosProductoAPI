@@ -7,12 +7,14 @@ const producto = new Producto()
 
 export const producto_router = () => {
   const router = Router()
+  //GET
   router.get('/producto', producto.server)
   router.get('/producto/getAll', producto.getAll)
   router.get('/producto/getColumns', producto.getColumnas)
-  router.post('/producto/create', producto.createProductoNuevo)
-  router.post('/producto/asignarEtapas', producto.asignarEtapas)
   router.get('/producto/:productoId', producto.getInfo)
   router.get('/producto/:productoId/etapas', producto.getEtapas)
+  // POST
+  router.post('/producto/create', producto.createProductoNuevo)
+  router.post('/producto/asignarEtapas', producto.asignarEtapas)
   return router
 }
