@@ -1,10 +1,10 @@
 //--------------------------------------------------------
 //CLASE PARA MANEJAR LAS PETICIONES HTTP DE LOS PRODUCTOS
 //--------------------------------------------------------
-import { Etapas } from '../sql/etapas.js'
+import { Etapas_sql } from '../sql/etapas.js'
 import { NuevoProducto } from '../sql/producto.js'
 const nuevoProducto = new NuevoProducto()
-const etapas = new Etapas()
+const etapas = new Etapas_sql()
 
 export class Producto {
   server = async (req, res) => {

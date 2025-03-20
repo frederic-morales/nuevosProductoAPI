@@ -36,7 +36,7 @@ export class Usuarios {
             Nombres, Apellidos, CorreoEmpresa 
             FROM GEN_USUARIOS
             WHERE CorreoEmpresa IS NOT NULL`
-      console.log(result.recordset)
+      // console.log(result.recordset)
       return result.recordset
     } catch (err) {
       console.error('Error al cerrar la conexión:', err)

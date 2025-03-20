@@ -4,7 +4,7 @@
 import { sqlConfig } from './configDB.js'
 import sql from 'mssql'
 
-export class Etapas {
+export class Etapas_sql {
   constructor() {
     this.sqlConfig = sqlConfig
     this.connection = null
@@ -109,6 +109,66 @@ export class Etapas {
 
       // Retorna el Id generado en el nuevo registro insertado
       return resultado.recordset[0].EtapaId
+    } catch (err) {
+      console.error('Error al crear una nueva etapa!!:', err)
+    } finally {
+      await this.close()
+    }
+  }
+
+  //INSERTA EL USUARIO ASIGNADO A UNA ETAPA
+  async asingarUsuario({ EtapaId, CodigoEmpleado }) {
+    try {
+      await this.connect()
+      const request = new sql.Request()
+        .input('EtapaId', sql.Int, EtapaId)
+        .input('CodigoEmpleado', sql.SmallInt, CodigoEmpleado)
+
+      const resultado =
+        await request.query(`INSERT INTO IND_GRUPOS_USUARIOS_ETAPAS
+        (EtapaId, CodigoEmpleado) VALUES (@EtapaId, @CodigoEmpleado)`)
+
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al crear una nueva etapa!!:', err)
+    } finally {
+      await this.close()
+    }
+  }
+
+  async getUsuariosAsignados({ EtapaId }) {
+    try {
+      await this.connect()
+      const request = new sql.Request().input('EtapaId', sql.Int, EtapaId)
+      // const resultado =
+      //   await request.query(`SELECT * FROM IND_GRUPOS_USUARIOS_ETAPAS
+      //   WHERE EtapaId = @EtapaId`)
+
+      const resultado =
+        await request.query(`SELECT G.EtapaId, G.CodigoEmpleado, U.Usuario, U.Nombres, U.Apellidos
+          FROM GEN_USUARIOS U JOIN IND_GRUPOS_USUARIOS_ETAPAS G ON G.CodigoEmpleado = U.CodigoEmpleado
+        WHERE G.EtapaId = @EtapaId`)
+
+      console.log(resultado.recordset)
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al obtener los usuarios asignados!!:', err)
+    } finally {
+      await this.close()
+    }
+  }
+
+  async deleteUsuarioDeEtapa({ EtapaId, CodigoEmpleado }) {
+    try {
+      await this.connect()
+      const request = new sql.Request()
+        .input('EtapaId', sql.Int, EtapaId)
+        .input('CodigoEmpleado', sql.Int, CodigoEmpleado)
+
+      const resultado = await request.query(`DELETE IND_GRUPOS_USUARIOS_ETAPAS
+        WHERE EtapaId = @EtapaId AND CodigoEmpleado = @CodigoEmpleado`)
+
+      return resultado.recordset
     } catch (err) {
       console.error('Error al crear una nueva etapa!!:', err)
     } finally {
