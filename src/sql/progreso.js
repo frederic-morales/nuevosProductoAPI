@@ -1,36 +1,10 @@
 //-----------------------------------------------------------
 //CLASE PARA MANEJAR LAS CONSULTAS DEL PROGRESO DE LAS ETAPAS
 //-----------------------------------------------------------
-import { sqlConfig } from './configDB.js'
+import { poolPromise } from './configDB.js'
 import sql from 'mssql'
 
 export class Progreso {
-  constructor() {
-    this.connection = null
-  }
-
-  // Abrir la conexion a la DB
-  async connect() {
-    try {
-      this.connection = await sql.connect(sqlConfig)
-      console.log('Conexión establecida!!')
-    } catch (err) {
-      console.error('Error al conectar:', err)
-    }
-  }
-
-  //Cerrar la conexion de la DB
-  async close() {
-    try {
-      if (this.connection) {
-        await this.connection.close()
-        console.log('Conexión cerrada!!')
-      }
-    } catch (err) {
-      console.error('Error al cerrar la conexión:', err)
-    }
-  }
-
   async iniciar({
     desarrolloProducto,
     etapa,
@@ -39,7 +13,10 @@ export class Progreso {
     descripcionEstado = 'Iniciado'
   }) {
     try {
-      const request = new sql.Request()
+      // const request = new sql.Request()
+      const pool = await poolPromise
+      const request = pool
+        .request()
         .input('DesarrolloProducto', sql.Int, desarrolloProducto)
         .input('Etapa', sql.Int, etapa)
         .input('Usuario', sql.SmallInt, usuario)
@@ -67,7 +44,10 @@ export class Progreso {
     descripcionEstado
   }) {
     try {
-      const request = new sql.Request()
+      // const request = new sql.Request()
+      const pool = await poolPromise
+      const request = pool
+        .request()
         .input('ProgresoEtapaId', sql.Int, progresoEtapaId)
         .input('DesarrolloProducto', sql.Int, desarrolloProducto)
         .input('FechaFinal', sql.Date, fechaFinal)

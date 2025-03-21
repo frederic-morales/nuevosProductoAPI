@@ -79,8 +79,7 @@ export class Producto {
   //TRAER LA INFO
   getInfo = async (req, res) => {
     const productoId = req.params.productoId
-    console.log(productoId)
-    console.log(req.params)
+
     if (!productoId)
       res.status(400).json({ message: 'El Id del producto es obligatorio' })
 
