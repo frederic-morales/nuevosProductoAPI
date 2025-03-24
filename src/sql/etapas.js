@@ -17,6 +17,29 @@ export class Etapas_sql {
     }
   }
 
+  //TRAE LA INFOMRACION DEL PROGRESO DE LA ETAPA
+  async progresoInfo({ desarrolloProducto, progresoId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool
+        .request()
+        .input('DesarrolloProducto', sql.Int, desarrolloProducto)
+        .input('EtapaId', sql.Int, progresoId)
+
+      const resultado = await request.query(`
+          SELECT E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado, 
+          A.EtapasAsignadasId, A.DesarrolloProducto, A.Estado AS AsignacionEstado,
+          P.ProgresoEtapaId, P.DesarrolloProducto, P.Etapa, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.DescripcionEstado
+            FROM IND_ETAPAS E
+            JOIN IND_ETAPAS_ASIGNADAS A ON E.EtapaId = A.EtapaId
+            LEFT JOIN IND_PROGRESO_ETAPAS P ON A.EtapaId = P.Etapa
+          WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.EtapaId = @EtapaId`)
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al traer las Etapas!!:', err)
+    }
+  }
+
   //TRAE TODAS LAS ETAPAS DEL PRODUCTO DADO
   async etapasPorProducto({ productoId }) {
     try {
@@ -83,7 +106,6 @@ export class Etapas_sql {
             OUTPUT INSERTED.EtapaId 
           VALUES (@Nombre, @Descripcion, @TiempoEstimado)
         `)
-
       // Retorna el Id generado en el nuevo registro insertado
       console.log('Insertando una nueva etapa')
       console.log('-------------------------')
@@ -101,12 +123,10 @@ export class Etapas_sql {
         .request()
         .input('EtapaId', sql.Int, EtapaId)
         .input('CodigoEmpleado', sql.SmallInt, CodigoEmpleado)
-
       const resultado =
         await request.query(`INSERT INTO IND_GRUPOS_USUARIOS_ETAPAS
+          console.log('Asignando usuarios a la etapa', EtapaId)
         (EtapaId, CodigoEmpleado) VALUES (@EtapaId, @CodigoEmpleado)`)
-
-      console.log('Asignando usuarios a la etapa', EtapaId)
       console.log('-------------------------')
       return resultado.recordset
     } catch (err) {
@@ -114,6 +134,7 @@ export class Etapas_sql {
     }
   }
 
+  //TRAE TODOS LOS USUARIOS ASIGNADOS A ESA ETAPA
   async getUsuariosAsignados({ EtapaId }) {
     try {
       const pool = await poolPromise
@@ -122,7 +143,6 @@ export class Etapas_sql {
         await request.query(`SELECT G.EtapaId, G.CodigoEmpleado, U.Usuario, U.Nombres, U.Apellidos
           FROM GEN_USUARIOS U JOIN IND_GRUPOS_USUARIOS_ETAPAS G ON G.CodigoEmpleado = U.CodigoEmpleado
         WHERE G.EtapaId = @EtapaId`)
-
       console.log('Traendo los usuarios asignados a la etapa: ', EtapaId)
       console.log('-------------------------')
       console.log(resultado.recordset)
@@ -132,6 +152,7 @@ export class Etapas_sql {
     }
   }
 
+  //ELIMINA UN USUARIO ASIGNADO DE LA ETAPA
   async deleteUsuarioDeEtapa({ EtapaId, CodigoEmpleado }) {
     try {
       const pool = await poolPromise
@@ -139,12 +160,10 @@ export class Etapas_sql {
         .request()
         .input('EtapaId', sql.Int, EtapaId)
         .input('CodigoEmpleado', sql.Int, CodigoEmpleado)
-
       console.log('Eliminando usuario de la etapa: ', EtapaId)
       console.log('-------------------------')
       const resultado = await request.query(`DELETE IND_GRUPOS_USUARIOS_ETAPAS
         WHERE EtapaId = @EtapaId AND CodigoEmpleado = @CodigoEmpleado`)
-
       return resultado.recordset
     } catch (err) {
       console.error('Error al crear una nueva etapa!!:', err)

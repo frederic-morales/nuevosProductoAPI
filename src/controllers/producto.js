@@ -116,7 +116,6 @@ export class Producto {
   //UPDATE PRODUCTO
   update = async (req, res) => {
     const { desarrolloProductoId, updates } = req.body
-
     console.log(desarrolloProductoId, updates)
 
     try {
@@ -127,18 +126,6 @@ export class Producto {
         console.log('desarrolloProductoId no recibido')
         return
       }
-      // const updates = {
-      //   desarrolloProductoId,
-      //   nombre,
-      //   descripcion,
-      //   estado,
-      //   rechazos,
-      //   fechaFin,
-      //   tiempoEstimado,
-      //   tiempoTotal,
-      //   codigoEmpleado,
-      //   serie
-      // }
       const response = await nuevoProducto.update({
         desarrolloProductoId,
         updates
