@@ -13,8 +13,10 @@ export const producto_router = () => {
   router.get('/producto/getColumns', producto.getColumnas)
   router.get('/producto/:productoId', producto.getInfo)
   router.get('/producto/:productoId/etapas', producto.getEtapas)
-  // POST
+  //POST
   router.post('/producto/create', producto.createProductoNuevo)
   router.post('/producto/asignarEtapas', producto.asignarEtapas)
+  //PATCH
+  router.patch('/producto/actualizar', producto.update)
   return router
 }

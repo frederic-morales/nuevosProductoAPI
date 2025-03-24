@@ -31,6 +31,7 @@ export class Etapas_sql {
             JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
             LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId
           WHERE A.DesarrolloProducto = @DesarrolloProducto
+          ORDER BY EtapaId
             `)
       console.log('Traendo todas las etapas del producto', productoId)
       console.log('-------------------------')

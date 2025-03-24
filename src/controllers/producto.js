@@ -112,4 +112,46 @@ export class Producto {
       res.status(500).json({ error: 'Error al traer las etapas del producto' })
     }
   }
+
+  //UPDATE PRODUCTO
+  update = async (req, res) => {
+    const { desarrolloProductoId, updates } = req.body
+
+    console.log(desarrolloProductoId, updates)
+
+    try {
+      if (!desarrolloProductoId) {
+        res
+          .status(400)
+          .json({ mensaje: 'desarrolloProductoId es obligatorio...' })
+        console.log('desarrolloProductoId no recibido')
+        return
+      }
+      // const updates = {
+      //   desarrolloProductoId,
+      //   nombre,
+      //   descripcion,
+      //   estado,
+      //   rechazos,
+      //   fechaFin,
+      //   tiempoEstimado,
+      //   tiempoTotal,
+      //   codigoEmpleado,
+      //   serie
+      // }
+      const response = await nuevoProducto.update({
+        desarrolloProductoId,
+        updates
+      })
+
+      res.status(200).json({
+        mensaje: `Actualizacion compleada con exito para el producto ${desarrolloProductoId}`,
+        response: response,
+        updates: updates
+      })
+    } catch (err) {
+      console.error('Error al traer las etapas del producto:', err)
+      res.status(500).json({ error: 'Error al traer las etapas del producto' })
+    }
+  }
 }

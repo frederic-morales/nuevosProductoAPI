@@ -30,7 +30,7 @@ export class NuevoProducto {
       //   `)
       const resultado = await request.query(`
         SELECT P.DesarrolloProductoId, P.Nombre, P.Descripcion, P.Estado, P.Rechazos, P.FechaInicio, 
-        P.FechaFin, P.TiempoEstimado, P.TiempoTotal, P.CodigoEmpleado, U.Nombres, U.Apellidos
+        P.FechaFin, P.TiempoEstimado, P.TiempoTotal, P.CodigoEmpleado, P.Serie, U.Nombres, U.Apellidos
         FROM IND_DESARROLLO_PRODUCTOS P 
           LEFT JOIN GEN_USUARIOS U ON P.CodigoEmpleado = U.CodigoEmpleado
         WHERE DesarrolloProductoId = @ProductoId
@@ -122,31 +122,45 @@ export class NuevoProducto {
     }
   }
 
-  async update({
-    desarrolloProductoId = null,
-    estado = null,
-    rechazos = null,
-    fechaFin = null,
-    tiempoEstimado = null,
-    tiempoTotal = null
-  }) {
+  async update({ desarrolloProductoId, updates }) {
     try {
       const pool = await poolPromise
       const request = pool
         .request()
         .input('DesarrolloProductoId', sql.Int, desarrolloProductoId)
-        .input('Estado', sql.SmallInt, estado)
-        .input('Rechazos', sql.SmallInt, rechazos)
-        .input('FechaFin', sql.Date, fechaFin)
-        .input('TiempoEstimado', sql.Int, tiempoEstimado)
-        .input('TiempoTotal', sql.Int, tiempoTotal)
+
+      const fieldTypes = {
+        nombre: sql.VarChar(100),
+        descripcion: sql.VarChar(255),
+        estado: sql.SmallInt,
+        rechazos: sql.SmallInt,
+        fechaFin: sql.Date,
+        tiempoEstimado: sql.Int,
+        tiempoTotal: sql.Int,
+        codigoEmpleado: sql.SmallInt,
+        serie: sql.Char(1)
+      }
+
+      //Actualiza solo los campos que se proporcionaron y los agrega al array
+      const setClauses = []
+      Object.keys(updates).forEach((key) => {
+        if (fieldTypes[key]) {
+          request.input(key, fieldTypes[key], updates[key])
+          setClauses.push(`${key} = @${key}`)
+        }
+      })
+
+      if (setClauses.length === 0) {
+        console.error('No se proporcionaron campos válidos para actualizar')
+      }
+
+      //Se vuelve una sola cadena de texto todo el array separando cada elemente por ", "
       const resultado = await request.query(`
-              UPDATE IND_DESARROLLO_PRODUCTOS 
-              SET Estado = @Estado, Rechazos = @Rechazos, FechaFin = @FechaFin,
-                TiempoEstimado = @TiempoEstimado, TiempoTotal = @TiempoTotal
-              WHERE DesarrolloProductoId = @desarrolloProductoId
-              `)
-      console.log('Update: ', resultado) // Retorna el Id generado
+            UPDATE IND_DESARROLLO_PRODUCTOS 
+              SET ${setClauses.join(', ')} 
+            WHERE DesarrolloProductoId = @DesarrolloProductoId`)
+
+      console.log('Update: ', resultado)
     } catch (err) {
       console.error('Error al actualizar el Producto:', err)
     }
