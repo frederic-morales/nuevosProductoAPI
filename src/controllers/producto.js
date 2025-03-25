@@ -80,8 +80,13 @@ export class Producto {
   getInfo = async (req, res) => {
     const productoId = req.params.productoId
 
-    if (!productoId)
+    console.log('Producto ID:')
+    console.log(productoId)
+
+    if (!productoId) {
       res.status(400).json({ message: 'El Id del producto es obligatorio' })
+      return
+    }
 
     try {
       const response = await nuevoProducto.getInfo({ productoId })
@@ -98,8 +103,10 @@ export class Producto {
   //TRAER TODAS SUS ETAPAS
   getEtapas = async (req, res) => {
     const productoId = req.params.productoId
-    if (!productoId)
+    if (!productoId) {
       res.status(400).json({ message: 'El Id del producto es obligatorio' })
+      return
+    }
 
     try {
       const response = await etapas.etapasPorProducto({ productoId })

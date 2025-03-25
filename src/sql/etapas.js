@@ -18,22 +18,21 @@ export class Etapas_sql {
   }
 
   //TRAE LA INFOMRACION DEL PROGRESO DE LA ETAPA
-  async progresoInfo({ desarrolloProducto, progresoId }) {
+  async getProgresoInfo({ desarrolloProductoId, etapaId }) {
     try {
       const pool = await poolPromise
       const request = pool
         .request()
-        .input('DesarrolloProducto', sql.Int, desarrolloProducto)
-        .input('EtapaId', sql.Int, progresoId)
+        .input('DesarrolloProducto', sql.Int, desarrolloProductoId)
+        .input('EtapaId', sql.Int, etapaId)
 
       const resultado = await request.query(`
           SELECT E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado, 
-          A.EtapasAsignadasId, A.DesarrolloProducto, A.Estado AS AsignacionEstado,
-          P.ProgresoEtapaId, P.DesarrolloProducto, P.Etapa, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.DescripcionEstado
+          A.EtapasAsignadasId, A.DesarrolloProducto, A.Estado AS AsignacionEstado
             FROM IND_ETAPAS E
             JOIN IND_ETAPAS_ASIGNADAS A ON E.EtapaId = A.EtapaId
-            LEFT JOIN IND_PROGRESO_ETAPAS P ON A.EtapaId = P.Etapa
           WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.EtapaId = @EtapaId`)
+      console.log(resultado.recordset)
       return resultado.recordset
     } catch (err) {
       console.error('Error al traer las Etapas!!:', err)
@@ -54,7 +53,7 @@ export class Etapas_sql {
             JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
             LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId
           WHERE A.DesarrolloProducto = @DesarrolloProducto
-          ORDER BY EtapaId
+          ORDER BY EtapaId   
             `)
       console.log('Traendo todas las etapas del producto', productoId)
       console.log('-------------------------')
@@ -160,11 +159,46 @@ export class Etapas_sql {
         .request()
         .input('EtapaId', sql.Int, EtapaId)
         .input('CodigoEmpleado', sql.Int, CodigoEmpleado)
+
+      const resultado = await request.query(`DELETE IND_GRUPOS_USUARIOS_ETAPAS
+          WHERE EtapaId = @EtapaId AND CodigoEmpleado = @CodigoEmpleado`)
+
       console.log('Eliminando usuario de la etapa: ', EtapaId)
       console.log('-------------------------')
-      const resultado = await request.query(`DELETE IND_GRUPOS_USUARIOS_ETAPAS
-        WHERE EtapaId = @EtapaId AND CodigoEmpleado = @CodigoEmpleado`)
       return resultado.recordset
+    } catch (err) {
+      console.error('Error al crear una nueva etapa!!:', err)
+    }
+  }
+
+  //INSERTA UN REGISTRO EN IND_PROGRESO_ETAPAS
+  async iniciarEtapa({
+    EtapaId,
+    CodigoEmpleado,
+    DesarrolloProductoId,
+    Estado = 3,
+    DescripcionEstado = 'Iniciado'
+  }) {
+    try {
+      const pool = await poolPromise
+      const request = pool
+        .request()
+        .input('EtapaId', sql.Int, EtapaId)
+        .input('CodigoEmpleado', sql.Int, CodigoEmpleado)
+        .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
+        .input('Estado', sql.Int, Estado)
+        .input('DescripcionEstado', sql.VarChar(100), DescripcionEstado)
+
+      const resultado = await request.query(`
+          INSERT INTO IND_PROGRESO_ETAPAS (Etapa, Usuario, DesarrolloProducto, Estado, DescripcionEstado)
+	                VALUES (@EtapaId, @CodigoEmpleado, @DesarrolloProductoId, @Estado, @DescripcionEstado)`)
+
+      console.log(
+        `Iniciando etapa ${EtapaId} para el producto ${DesarrolloProductoId}`
+      )
+      console.log('-------------------------')
+
+      return resultado
     } catch (err) {
       console.error('Error al crear una nueva etapa!!:', err)
     }

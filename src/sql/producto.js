@@ -28,12 +28,14 @@ export class NuevoProducto {
       //     FROM IND_DESARROLLO_PRODUCTOS
       //     WHERE DesarrolloProductoId = @ProductoId
       //   `)
+      console.log(productoId)
+
       const resultado = await request.query(`
         SELECT P.DesarrolloProductoId, P.Nombre, P.Descripcion, P.Estado, P.Rechazos, P.FechaInicio, 
         P.FechaFin, P.TiempoEstimado, P.TiempoTotal, P.CodigoEmpleado, P.Serie, U.Nombres, U.Apellidos
         FROM IND_DESARROLLO_PRODUCTOS P 
           LEFT JOIN GEN_USUARIOS U ON P.CodigoEmpleado = U.CodigoEmpleado
-        WHERE DesarrolloProductoId = @ProductoId
+        WHERE P.DesarrolloProductoId = @ProductoId
           `)
       return resultado.recordset
     } catch (err) {

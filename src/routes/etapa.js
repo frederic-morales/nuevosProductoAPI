@@ -9,8 +9,9 @@ export const etapa_router = () => {
   router.get('/etapa', etapa.server)
   router.get('/etapa/getAll', etapa.getAll)
   router.get('/etapa/:etapaId/usuarios', etapa.getUsuariosAsignados)
-  router.get('/:etapaAsignadaId')
+  router.get('/etapas/:desarrolloProductoId/:etapaId', etapa.getProgresoInfo)
   //POST
   router.post('/etapa/asignarUsuarios', etapa.asignarUsuarios)
+  router.post('/etapa/iniciar', etapa.iniciarEtapa)
   return router
 }
