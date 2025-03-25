@@ -48,7 +48,7 @@ export class Etapas_sql {
       const resultado = await request.query(`
           SELECT A.DesarrolloProducto AS ProductoId, A.Estado, A.EtapasAsignadasId,
             E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
-            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal 
+            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado
           FROM IND_ETAPAS E
             JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
             LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId
