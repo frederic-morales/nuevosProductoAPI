@@ -8,5 +8,6 @@ const usuarios = new Usuarios_con()
 export const usuario_router = () => {
   const router = Router()
   router.get('/usuarios', usuarios.getAll)
+  router.get('/usuarios/:codigoGrupo', usuarios.getGrupo)
   return router
 }

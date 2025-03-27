@@ -5,7 +5,6 @@ export class Etapa {
   //-------------------------
   //  GETS
   //-------------------------
-
   server = async (req, res) => {
     res.status(200).json({ message: 'Server running - etapa' })
   }
@@ -75,12 +74,12 @@ export class Etapa {
       })
       return
     }
+
     try {
       const response = await etapas.getProgresoHistorial({
         DesarrolloProductoId,
         EtapaId
       })
-
       res.status(200).json({
         message: `Traendo el historial de la etapa ${EtapaId}`,
         response: response
@@ -95,7 +94,6 @@ export class Etapa {
   //-------------------------
   //  POSTS
   //-------------------------
-
   //ASIGNA USUARIOS A UNA ETAPA
   asignarUsuarios = async (req, res) => {
     const { EtapaId, Usuarios } = req.body
@@ -104,20 +102,19 @@ export class Etapa {
       res
         .status(400)
         .json({ message: 'EtapaId y los usuarios son obligatorios' })
+      return
     }
 
     try {
       const usuariosAnteriores = await etapas.getUsuariosAsignados({ EtapaId }) // Trae los usuarios asignados actualmente a la etapa
-      const currentSet = new Set(
-        usuariosAnteriores.map((u) => u.CodigoEmpleado)
-      )
-      const newSet = new Set(Usuarios.map((u) => u.CodigoEmpleado))
+      const currentSet = new Set(usuariosAnteriores.map((u) => u.Usuario))
+      const newSet = new Set(Usuarios.map((u) => u.Usuario))
 
       const usuariosParaAgregar = Usuarios.filter(
-        (usuario) => !currentSet.has(usuario.CodigoEmpleado)
+        (usuario) => !currentSet.has(usuario.Usuario)
       )
       const usuariosParaEliminar = usuariosAnteriores.filter(
-        (usuario) => !newSet.has(usuario.CodigoEmpleado)
+        (usuario) => !newSet.has(usuario.Usuario)
       )
 
       const resultados = []
@@ -126,7 +123,7 @@ export class Etapa {
         // Asigna los usuarios a la etapa
         const resultado = await etapas.asingarUsuario({
           EtapaId,
-          CodigoEmpleado: usuario.CodigoEmpleado
+          Usuario: usuario.Usuario
         })
         resultados.push(resultado)
       }
@@ -135,7 +132,7 @@ export class Etapa {
         // Elimina los usuarios de la etapa
         const resultado = await etapas.deleteUsuarioDeEtapa({
           EtapaId,
-          CodigoEmpleado: usuario.CodigoEmpleado
+          Usuario: usuario.Usuario
         })
         resultados.push(resultado)
       }
@@ -154,7 +151,6 @@ export class Etapa {
   iniciarEtapa = async (req, res) => {
     const { EtapaId, CodigoEmpleado, DesarrolloProductoId } = req.body
     // console.log(EtapaId, CodigoEmpleado, DesarrolloProductoId)
-
     if (!EtapaId || !CodigoEmpleado || !DesarrolloProductoId) {
       res.status(400).json({
         mensaje:
@@ -162,7 +158,6 @@ export class Etapa {
       })
       return
     }
-
     try {
       const resInsert = await etapas.iniciarEtapa({
         EtapaId,
@@ -175,7 +170,6 @@ export class Etapa {
         EtapaId
       })
       // console.log(resUpdate)
-
       res.status(200).json({
         mensaje: 'Etapa Inciada exitosamente...',
         resultInsert: resInsert,

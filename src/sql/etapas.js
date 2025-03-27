@@ -20,7 +20,6 @@ export class Etapas_sql {
   //-------------------------
   //  SELECTS
   //-------------------------
-
   //TRAE LA INFOMRACION DEL PROGRESO DE LA ETAPA
   async getProgresoInfo({ desarrolloProductoId, etapaId }) {
     try {
@@ -103,8 +102,8 @@ export class Etapas_sql {
       const pool = await poolPromise
       const request = pool.request().input('EtapaId', sql.Int, EtapaId)
       const resultado =
-        await request.query(`SELECT G.EtapaId, G.CodigoEmpleado, U.Usuario, U.Nombres, U.Apellidos
-          FROM GEN_USUARIOS U JOIN IND_GRUPOS_USUARIOS_ETAPAS G ON G.CodigoEmpleado = U.CodigoEmpleado
+        await request.query(`SELECT G.EtapaId, U.Usuario, U.Nombres, U.Apellidos
+          FROM GEN_USUARIOS U JOIN IND_GRUPOS_USUARIOS_ETAPAS G ON G.Usuario = U.Usuario
         WHERE G.EtapaId = @EtapaId`)
       console.log('Traendo los usuarios asignados a la etapa: ', EtapaId)
       console.log('-------------------------')
@@ -144,7 +143,6 @@ export class Etapas_sql {
   //-------------------------
   //  INSERTS
   //-------------------------
-
   //INSERTA UNA NUEVA ETAPA
   async insert({ nombre, descripcion = null, tiempoEstimado = null }) {
     try {
@@ -170,21 +168,22 @@ export class Etapas_sql {
   }
 
   //INSERTA EL USUARIO ASIGNADO A UNA ETAPA
-  async asingarUsuario({ EtapaId, CodigoEmpleado }) {
+  async asingarUsuario({ EtapaId, Usuario }) {
     try {
       const pool = await poolPromise
       const request = pool
         .request()
         .input('EtapaId', sql.Int, EtapaId)
-        .input('CodigoEmpleado', sql.SmallInt, CodigoEmpleado)
+        .input('Usuario', sql.VarChar(20), Usuario)
       const resultado =
         await request.query(`INSERT INTO IND_GRUPOS_USUARIOS_ETAPAS
-          console.log('Asignando usuarios a la etapa', EtapaId)
-        (EtapaId, CodigoEmpleado) VALUES (@EtapaId, @CodigoEmpleado)`)
+          (EtapaId, Usuario) VALUES (@EtapaId, @Usuario)`)
+
       console.log('-------------------------')
+      console.log('Asignando usuarios a la etapa', EtapaId)
       return resultado.recordset
     } catch (err) {
-      console.error('Error al crear una nueva etapa!!:', err)
+      console.error('Error al agregar un usuario a la etapa!!:', err)
     }
   }
 
@@ -217,7 +216,7 @@ export class Etapas_sql {
 
       return resultado
     } catch (err) {
-      console.error('Error al crear una nueva etapa!!:', err)
+      console.error('Error al iniciar una etapa!!:', err)
     }
   }
 
@@ -246,14 +245,13 @@ export class Etapas_sql {
       console.log(resultado)
       return resultado
     } catch (err) {
-      console.error('Error al crear una nueva etapa!!:', err)
+      console.error('Error al crear una actualizacion de etapa!!:', err)
     }
   }
 
   //-------------------------
   //  UPDATES
   //-------------------------
-
   //Actualiza el estado de la etapa asignada en IND_ETAPAS_ASIGNADAS
   async actualizarEstado({ DesarrolloProductoId, EtapaId, Estado = 3 }) {
     try {
@@ -275,31 +273,30 @@ export class Etapas_sql {
       console.log('-------------------------')
       return resultado
     } catch (err) {
-      console.error('Error al crear una nueva etapa!!:', err)
+      console.error('Error al actualizar estado!!:', err)
     }
   }
 
   //-------------------------
   //  DELETES
   //-------------------------
-
   //ELIMINA UN USUARIO ASIGNADO DE LA ETAPA
-  async deleteUsuarioDeEtapa({ EtapaId, CodigoEmpleado }) {
+  async deleteUsuarioDeEtapa({ EtapaId, Usuario }) {
     try {
       const pool = await poolPromise
       const request = pool
         .request()
         .input('EtapaId', sql.Int, EtapaId)
-        .input('CodigoEmpleado', sql.Int, CodigoEmpleado)
+        .input('Usuario', sql.VarChar(20), Usuario)
 
       const resultado = await request.query(`DELETE IND_GRUPOS_USUARIOS_ETAPAS
-          WHERE EtapaId = @EtapaId AND CodigoEmpleado = @CodigoEmpleado`)
+          WHERE EtapaId = @EtapaId AND Usuario = @Usuario`)
 
       console.log('Eliminando usuario de la etapa: ', EtapaId)
       console.log('-------------------------')
       return resultado.recordset
     } catch (err) {
-      console.error('Error al crear una nueva etapa!!:', err)
+      console.error('Error al eliminar un usuario de la etapa!!:', err)
     }
   }
 }
