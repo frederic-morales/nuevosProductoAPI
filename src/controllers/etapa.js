@@ -165,7 +165,7 @@ export class Etapa {
         DesarrolloProductoId
       })
       console.log(resInsert)
-      const resUpdate = await etapas.actualizarEstado({
+      const resUpdate = await etapas.actualizarEstadoAsignacion({
         DesarrolloProductoId,
         EtapaId
       })
@@ -199,9 +199,15 @@ export class Etapa {
         Descripcion
       })
 
+      const actualizacion = await etapas.actualizarProgresoEtapa({
+        Estado,
+        ProgresoEtapaId
+      })
+
       res.status(200).json({
         mensaje: 'Actualizacion agregada con exito',
-        response: response
+        response: response,
+        actualizacion: actualizacion
       })
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)

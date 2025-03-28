@@ -253,7 +253,11 @@ export class Etapas_sql {
   //  UPDATES
   //-------------------------
   //Actualiza el estado de la etapa asignada en IND_ETAPAS_ASIGNADAS
-  async actualizarEstado({ DesarrolloProductoId, EtapaId, Estado = 3 }) {
+  async actualizarEstadoAsignacion({
+    DesarrolloProductoId,
+    EtapaId,
+    Estado = 3
+  }) {
     try {
       const pool = await poolPromise
       const request = pool
@@ -272,6 +276,31 @@ export class Etapas_sql {
       )
       console.log('-------------------------')
       return resultado
+    } catch (err) {
+      console.error('Error al actualizar estado!!:', err)
+    }
+  }
+
+  //Actualiza el progreso de la etapa en IND_PROGRESO_ETAPAS
+  async actualizarProgresoEtapa({ Estado, FechaFinal, ProgresoEtapaId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool
+        .request()
+        .input('Estado', sql.Int, Estado)
+        .input('FechaFinal', sql.Date, FechaFinal)
+        .input('ProgresoEtapaId', sql.Int, ProgresoEtapaId)
+
+      const resultado = await request.query(`
+        UPDATE IND_PROGRESO_ETAPAS
+          SET Estado = @Estado, FechaFinal = @FechaFinal
+        WHERE ProgresoEtapaId = @ProgresoEtapaId
+        `)
+      console.log(Estado)
+      console.log(`Actualizando el progreso de la etapa ${ProgresoEtapaId}`)
+      console.log('-------------------------')
+      console.log(await resultado)
+      return await resultado
     } catch (err) {
       console.error('Error al actualizar estado!!:', err)
     }

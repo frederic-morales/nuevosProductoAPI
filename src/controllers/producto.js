@@ -7,6 +7,9 @@ const nuevoProducto = new NuevoProducto()
 const etapas = new Etapas_sql()
 
 export class Producto {
+  //-------------------------
+  //  GETS
+  //-------------------------
   server = async (req, res) => {
     res.status(200).json({ message: 'Server running' })
   }
@@ -27,24 +30,6 @@ export class Producto {
     } catch (err) {
       console.error('❌ Error al traer las columnas:', err)
       res.status(500).json({ error: 'Error al traer las columnas' })
-    }
-  }
-
-  //INICIAR UN PRODUCTO NUEVO
-  createProductoNuevo = async (req, res) => {
-    const { nombre, descripcion, codigoEmpleado, serie } = req.body
-    // console.log(req.body)
-    if (nombre && descripcion && codigoEmpleado) {
-      const nuevoProductoId = await nuevoProducto.insert({
-        nombre,
-        descripcion,
-        codigoEmpleado,
-        serie
-      })
-      console.log(nuevoProductoId)
-      res.status(200).json({ nuevoProductoId: nuevoProductoId })
-    } else {
-      res.status(400).json({ error: 'Nombre y Descripcion son obligatorios' })
     }
   }
 
@@ -120,6 +105,30 @@ export class Producto {
     }
   }
 
+  //-------------------------
+  //  POST
+  //-------------------------
+  //INICIAR UN PRODUCTO NUEVO
+  createProductoNuevo = async (req, res) => {
+    const { nombre, descripcion, codigoEmpleado, serie } = req.body
+    // console.log(req.body)
+    if (nombre && descripcion && codigoEmpleado) {
+      const nuevoProductoId = await nuevoProducto.insert({
+        nombre,
+        descripcion,
+        codigoEmpleado,
+        serie
+      })
+      console.log(nuevoProductoId)
+      res.status(200).json({ nuevoProductoId: nuevoProductoId })
+    } else {
+      res.status(400).json({ error: 'Nombre y Descripcion son obligatorios' })
+    }
+  }
+
+  //-------------------------
+  //  PATCH
+  //-------------------------
   //UPDATE PRODUCTO
   update = async (req, res) => {
     const { desarrolloProductoId, updates } = req.body

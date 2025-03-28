@@ -17,7 +17,6 @@ app.use('/', usuario_router())
 const PORT = process.env.PORT || 3000
 
 ;(async () => {
-  // const ip = await internalIpV4() // Obtiene tu IP local automáticamente
   const ip = process.env.IP // IP local
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor local: http://localhost:${PORT}`)

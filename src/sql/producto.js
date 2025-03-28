@@ -8,6 +8,9 @@ import { poolPromise } from './configDB.js'
 import sql from 'mssql'
 
 export class NuevoProducto {
+  //-------------------------
+  //  SELECTS
+  //-------------------------
   async getAll() {
     try {
       const pool = await poolPromise
@@ -19,15 +22,11 @@ export class NuevoProducto {
     }
   }
 
+  //TRAE LA INFORMACION DEL PRODUCTO
   async getInfo({ productoId }) {
     try {
       const pool = await poolPromise
       const request = pool.request().input('ProductoId', sql.Int, productoId)
-      // const resultado = await request.query(`
-      //     SELECT *
-      //     FROM IND_DESARROLLO_PRODUCTOS
-      //     WHERE DesarrolloProductoId = @ProductoId
-      //   `)
       console.log(productoId)
 
       const resultado = await request.query(`
@@ -43,6 +42,7 @@ export class NuevoProducto {
     }
   }
 
+  // TRAE LAS COLUMNAS DE LA TABLA DE IND_DESARROLLOS_PRODUCTOS
   async getColumnas() {
     try {
       const pool = await poolPromise
@@ -66,6 +66,10 @@ export class NuevoProducto {
     }
   }
 
+  //-------------------------
+  //  INSERTS
+  //-------------------------
+  //INSERTA UN NUEVO PRODUCTO Y RETORNA EL ID GENERADO
   async insert({
     nombre,
     descripcion = null,
@@ -102,6 +106,7 @@ export class NuevoProducto {
     }
   }
 
+  //INSERTA UNA ETAPA PARA EL PRODUCTO EN IND_ETAPAS_ASIGNADAS
   async asingarEtapa({ desarrolloProducto, EtapaId, estado = null }) {
     try {
       // await this.connect()
@@ -124,6 +129,10 @@ export class NuevoProducto {
     }
   }
 
+  //-------------------------
+  //  UPDATES
+  //-------------------------
+  //ACTUALIZA LOS CAMPOS DEL PRODUCTO
   async update({ desarrolloProductoId, updates }) {
     try {
       const pool = await poolPromise
@@ -163,6 +172,7 @@ export class NuevoProducto {
             WHERE DesarrolloProductoId = @DesarrolloProductoId`)
 
       console.log('Update: ', resultado)
+      return resultado.recordset
     } catch (err) {
       console.error('Error al actualizar el Producto:', err)
     }
