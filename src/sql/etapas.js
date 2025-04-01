@@ -3,7 +3,10 @@
 //--------------------------------------------------------
 import { poolPromise } from './configDB.js'
 import sql from 'mssql'
-
+//-------------------------
+//  SELECTS
+//-------------------------
+//TRAE TODAS LAS ETAPAS
 export class Etapas_sql {
   async getAll() {
     try {
@@ -17,9 +20,6 @@ export class Etapas_sql {
     }
   }
 
-  //-------------------------
-  //  SELECTS
-  //-------------------------
   //TRAE LA INFOMRACION DEL PROGRESO DE LA ETAPA
   async getProgresoInfo({ desarrolloProductoId, etapaId }) {
     try {
@@ -52,7 +52,7 @@ export class Etapas_sql {
       const request = pool.request()
       request.input('DesarrolloProducto', sql.Int, productoId)
       const resultado = await request.query(`
-          SELECT A.DesarrolloProducto AS ProductoId, A.Estado, A.EtapasAsignadasId,
+          SELECT A.DesarrolloProducto AS ProductoId, A.Estado AS ProductoEstado, A.EtapasAsignadasId,
             E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
             P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado
           FROM IND_ETAPAS E
@@ -140,6 +140,55 @@ export class Etapas_sql {
     }
   }
 
+  // TRAE LOS PROCESOS RESPONSABLES DE CADA ETAPA
+  async getProcesosResponsables({ EtapaId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool.request().input('EtapaId', sql.Int, EtapaId)
+      const resultado = await request.query(`
+        SELECT E.EtapaId, 
+          R.CodigoProceso, P.Nombre, P.Abreviatura, P.TipoProceso, P.CodigoResponsable, P.UsuarioDuenoProceso, P.CorreoDuenoProceso
+        FROM IND_ETAPAS E
+          JOIN IND_PROCESOS_RESPONSABLES R ON E.EtapaId = R.Etapa
+          JOIN GES_PROCESOS P ON P.CodigoProceso = R.CodigoProceso
+        WHERE E.EtapaId = @EtapaId
+        ORDER BY E.EtapaId`)
+
+      console.log('Traendo los procesos de la etapa ', EtapaId)
+      console.log('-------------------------')
+      // console.log(resultado.recordset)
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al obtener el Historial de la etapa!!:', err)
+    }
+  }
+
+  async getEtapaUsuario({ DesarrolloProductoId, EtapaId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool
+        .request()
+        .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
+        .input('EtapaId', sql.Int, EtapaId)
+      const resultado = await request.query(`
+          SELECT P.ProgresoEtapaId, P.Estado AS ProgresoEstado, P.FechaInicio,
+            D.DesarrolloProductoId, D.Nombre, D.Descripcion, 
+            E.EtapaId, E.TiempoEstimado, 
+            U.Nombres, U.Apellidos, U.CorreoEmpresa AS Correo
+          FROM IND_PROGRESO_ETAPAS P
+            JOIN IND_DESARROLLO_PRODUCTOS D ON P.DesarrolloProducto = D.DesarrolloProductoId
+            JOIN IND_ETAPAS E ON E.EtapaId = P.Etapa
+            JOIN GEN_USUARIOS U ON U.Usuario = P.Usuario
+            WHERE P.DesarrolloProducto = @DesarrolloProductoId AND E.EtapaId = @EtapaId`)
+
+      console.log('Traendo la informacion de la etapa con el usuario ', EtapaId)
+      console.log('-------------------------')
+      return await resultado?.recordset[0]
+    } catch (err) {
+      console.error('Error al traer la etapa con el usuario!!:', err)
+    }
+  }
+
   //-------------------------
   //  INSERTS
   //-------------------------
@@ -150,8 +199,8 @@ export class Etapas_sql {
       const request = pool
         .request()
         .input('Nombre', sql.VarChar(100), nombre)
-        .input('Descripcion', sql.VarChar(255), descripcion)
         .input('TiempoEstimado', sql.Date, tiempoEstimado)
+        .input('Descripcion', sql.VarChar(255), descripcion)
 
       const resultado = await request.query(`
           INSERT INTO IND_ETAPAS (Nombre, Descripcion, TiempoEstimado)
@@ -177,7 +226,7 @@ export class Etapas_sql {
         .input('Usuario', sql.VarChar(20), Usuario)
       const resultado =
         await request.query(`INSERT INTO IND_GRUPOS_USUARIOS_ETAPAS
-          (EtapaId, Usuario) VALUES (@EtapaId, @Usuario)`)
+          (EtapaId, Usuario) VALUES   (@EtapaId, @Usuario)`)
 
       console.log('-------------------------')
       console.log('Asignando usuarios a la etapa', EtapaId)
@@ -268,7 +317,7 @@ export class Etapas_sql {
 
       const resultado = await request.query(`
           UPDATE IND_ETAPAS_ASIGNADAS 
-            SET Estado = @Estado --INICIADO
+            SET Estado = @Estado -- 3 = INICIADO
           WHERE DesarrolloProducto = @DesarrolloProducto AND EtapaId = @EtapaId
         `)
       console.log(
@@ -282,18 +331,24 @@ export class Etapas_sql {
   }
 
   //Actualiza el progreso de la etapa en IND_PROGRESO_ETAPAS
-  async actualizarProgresoEtapa({ Estado, FechaFinal, ProgresoEtapaId }) {
+  async actualizarProgresoEtapa({
+    Estado,
+    FechaFinal,
+    ProgresoEtapaId,
+    EstadoDescripcion
+  }) {
     try {
       const pool = await poolPromise
       const request = pool
         .request()
-        .input('Estado', sql.Int, Estado)
         .input('FechaFinal', sql.Date, FechaFinal)
         .input('ProgresoEtapaId', sql.Int, ProgresoEtapaId)
+        .input('Estado', sql.Int, Estado)
+        .input('EstadoDescripcion', sql.VarChar(100), EstadoDescripcion)
 
       const resultado = await request.query(`
         UPDATE IND_PROGRESO_ETAPAS
-          SET Estado = @Estado, FechaFinal = @FechaFinal
+          SET Estado = @Estado, FechaFinal = @FechaFinal, DescripcionEstado = @EstadoDescripcion
         WHERE ProgresoEtapaId = @ProgresoEtapaId
         `)
       console.log(Estado)
@@ -309,6 +364,7 @@ export class Etapas_sql {
   //-------------------------
   //  DELETES
   //-------------------------
+
   //ELIMINA UN USUARIO ASIGNADO DE LA ETAPA
   async deleteUsuarioDeEtapa({ EtapaId, Usuario }) {
     try {

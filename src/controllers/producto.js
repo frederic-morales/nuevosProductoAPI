@@ -87,14 +87,19 @@ export class Producto {
     try {
       const etapasProducto = await etapas.etapasPorProducto({ productoId })
       const etapasConUsuarios = etapasProducto.map(async (etapa) => {
-        const EtapaId = etapa.EtapaId
+        const EtapaId = etapa?.EtapaId
         const usuarios = await etapas.getUsuariosAsignados({ EtapaId })
+        const procesosResponsables = await etapas.getProcesosResponsables({
+          EtapaId
+        })
         return {
           ...etapa,
-          usuariosAsignados: usuarios
+          usuariosAsignados: usuarios,
+          procesosResponsables: procesosResponsables
         }
       })
 
+      // Espera a que todas las consultas se completen antes de enviar la informacion al usuario
       const response = await Promise.all(etapasConUsuarios)
       res.status(200).json({
         mensaje: `Traendo las etapas del producto ${productoId}...`,

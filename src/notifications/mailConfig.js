@@ -6,7 +6,7 @@ config()
 
 const transporter = nodeMailer.createTransport({
   host: process.env.HOST,
-  port: process.env.PORT,
+  port: process.env.PORTMAIL,
   secure: false,
   auth: {
     user: process.env.LOCALMAIL,

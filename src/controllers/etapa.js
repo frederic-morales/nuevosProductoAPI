@@ -1,4 +1,5 @@
 import { Etapas_sql } from '../sql/etapas.js'
+import sendNotificacion from '../notifications/sendEmail.js'
 const etapas = new Etapas_sql()
 
 export class Etapa {
@@ -11,9 +12,28 @@ export class Etapa {
 
   //TRAE TODAS LAS ETAPAS
   getAll = async (req, res) => {
-    const productos = await etapas.getAll()
-    // console.log(productos)
-    res.status(200).json(productos)
+    try {
+      const etapasAll = await etapas.getAll()
+      const etapasConUsuarios = etapasAll.map(async (etapa) => {
+        const EtapaId = etapa.EtapaId
+        const usuarios = await etapas.getUsuariosAsignados({ EtapaId })
+        const procesosResponsables = await etapas.getProcesosResponsables({
+          EtapaId
+        })
+        // console.log(procesosResponsables)
+        return {
+          ...etapa,
+          usuariosAsignados: usuarios,
+          procesosResponsables: procesosResponsables
+        }
+      })
+      // Espera a que todas las consultas se completen antes de enviar la informacion al usuario
+      const response = await Promise.all(etapasConUsuarios)
+      res.status(200).json(response)
+    } catch (err) {
+      console.error('❌ Error al traer todas las etapas:', err)
+      res.status(500).json({ error: 'Error en la obtención de las etapas' })
+    }
   }
 
   //OBTIENE LOS USUARIOS ASIGNADOS A UNA ETAPA
@@ -149,8 +169,8 @@ export class Etapa {
 
   //INSERTA UN REGISTRO EN IND_PROGRESO_ETAPAS
   iniciarEtapa = async (req, res) => {
-    const { EtapaId, Usuario, DesarrolloProductoId } = req.body
     // console.log(EtapaId, CodigoEmpleado, DesarrolloProductoId)
+    const { EtapaId, Usuario, DesarrolloProductoId } = req.body
     if (!EtapaId || !Usuario || !DesarrolloProductoId) {
       res.status(400).json({
         mensaje: 'EtapaId, Usuario y DesarrolloProductoId son obligatorios'
@@ -158,21 +178,32 @@ export class Etapa {
       return
     }
     try {
+      //Crea un nuevo Registro
       const resInsert = await etapas.iniciarEtapa({
         EtapaId,
         Usuario,
         DesarrolloProductoId
       })
-      console.log(resInsert)
+      // console.log(resInsert)
+      //Actualiza el estado la etapa asignada
       const resUpdate = await etapas.actualizarEstadoAsignacion({
         DesarrolloProductoId,
         EtapaId
       })
+
+      //Envia Notificacion de Inicio de Etapa
+      const resEnviarNotificacion = await sendNotificacion({
+        DesarrolloProductoId,
+        EtapaId
+      })
+
+      // console.log(resEnviarNotificacion)
       // console.log(resUpdate)
       res.status(200).json({
         mensaje: 'Etapa Inciada exitosamente...',
         resultInsert: resInsert,
-        resultUpdate: resUpdate
+        resultUpdate: resUpdate,
+        resEnviarNotificacion: resEnviarNotificacion
       })
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)
@@ -182,10 +213,11 @@ export class Etapa {
 
   //INSERTA UN REGISTRO EN IND_PROGRESO_ETAPAS_HISTORIAL
   agregarActualizacion = async (req, res) => {
-    const { ProgresoEtapaId, Estado, RutaDoc, Descripcion } = req.body
-    if (!ProgresoEtapaId || !Estado) {
+    const { ProgresoEtapaId, RutaDoc, Descripcion, Estado, EstadoDescripcion } =
+      req.body
+    if (!ProgresoEtapaId || !Estado || !EstadoDescripcion) {
       res.status(400).json({
-        mensaje: 'ProgresoEtapaId y Estado son obligatorios'
+        mensaje: 'ProgresoEtapaId y Estado y EstadoDescri son obligatorios'
       })
       return
     }
@@ -200,7 +232,8 @@ export class Etapa {
 
       const actualizacion = await etapas.actualizarProgresoEtapa({
         Estado,
-        ProgresoEtapaId
+        ProgresoEtapaId,
+        EstadoDescripcion
       })
 
       res.status(200).json({
