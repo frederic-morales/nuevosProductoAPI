@@ -149,19 +149,18 @@ export class Etapa {
 
   //INSERTA UN REGISTRO EN IND_PROGRESO_ETAPAS
   iniciarEtapa = async (req, res) => {
-    const { EtapaId, CodigoEmpleado, DesarrolloProductoId } = req.body
+    const { EtapaId, Usuario, DesarrolloProductoId } = req.body
     // console.log(EtapaId, CodigoEmpleado, DesarrolloProductoId)
-    if (!EtapaId || !CodigoEmpleado || !DesarrolloProductoId) {
+    if (!EtapaId || !Usuario || !DesarrolloProductoId) {
       res.status(400).json({
-        mensaje:
-          'EtapaId, CodigoEmpleado y DesarrolloProductoId son obligatorios'
+        mensaje: 'EtapaId, Usuario y DesarrolloProductoId son obligatorios'
       })
       return
     }
     try {
       const resInsert = await etapas.iniciarEtapa({
         EtapaId,
-        CodigoEmpleado,
+        Usuario,
         DesarrolloProductoId
       })
       console.log(resInsert)

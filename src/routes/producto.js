@@ -10,6 +10,7 @@ export const producto_router = () => {
   //GET
   router.get('/producto', producto.server)
   router.get('/producto/getAll', producto.getAll)
+  router.get('/producto/:serieProducto/getAll', producto.getProductosPorSerie)
   router.get('/producto/getColumns', producto.getColumnas)
   router.get('/producto/:productoId', producto.getInfo)
   router.get('/producto/:productoId/etapas', producto.getEtapas)

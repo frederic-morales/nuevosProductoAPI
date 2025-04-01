@@ -190,7 +190,7 @@ export class Etapas_sql {
   //INSERTA UN REGISTRO EN IND_PROGRESO_ETAPAS
   async iniciarEtapa({
     EtapaId,
-    CodigoEmpleado,
+    Usuario,
     DesarrolloProductoId,
     Estado = 3,
     DescripcionEstado = 'Iniciado'
@@ -200,14 +200,14 @@ export class Etapas_sql {
       const request = pool
         .request()
         .input('EtapaId', sql.Int, EtapaId)
-        .input('CodigoEmpleado', sql.Int, CodigoEmpleado)
+        .input('Usuario', sql.VarChar(20), Usuario)
         .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
         .input('Estado', sql.Int, Estado)
         .input('DescripcionEstado', sql.VarChar(100), DescripcionEstado)
 
       const resultado = await request.query(`
           INSERT INTO IND_PROGRESO_ETAPAS (Etapa, Usuario, DesarrolloProducto, Estado, DescripcionEstado)
-	                VALUES (@EtapaId, @CodigoEmpleado, @DesarrolloProductoId, @Estado, @DescripcionEstado)`)
+	                VALUES (@EtapaId, @Usuario, @DesarrolloProductoId, @Estado, @DescripcionEstado)`)
 
       console.log(
         `Iniciando etapa ${EtapaId} para el producto ${DesarrolloProductoId}`

@@ -22,6 +22,26 @@ export class NuevoProducto {
     }
   }
 
+  //TRAE TODOS LOS PRODUCTOS DE LA SERIE ELEGIDA
+  async getProductosPorSerie(serie) {
+    try {
+      const pool = await poolPromise
+      const request = await pool.request().input('Serie', sql.Char(1), serie)
+      const resultado =
+        await request.query(`SELECT P.DesarrolloProductoId, P.Nombre, P.Descripcion, P.Estado, P.Rechazos, 
+                            P.FechaInicio, P.FechaFin, P.TiempoEstimado, P.TiempoTotal, P.Serie, P.Usuario,
+                            U.CodigoGrupo, U.Nombres AS Responsable, U.Apellidos, U.CorreoEmpresa
+                              FROM IND_DESARROLLO_PRODUCTOS P
+                              JOIN GEN_USUARIOS U ON U.Usuario = P.Usuario
+                            WHERE Serie = @Serie`)
+
+      console.log(`Traendo los productos de la serie ${serie}`)
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al traer los Productos!!:', err)
+    }
+  }
+
   //TRAE LA INFORMACION DEL PRODUCTO
   async getInfo({ productoId }) {
     try {
@@ -31,9 +51,9 @@ export class NuevoProducto {
 
       const resultado = await request.query(`
         SELECT P.DesarrolloProductoId, P.Nombre, P.Descripcion, P.Estado, P.Rechazos, P.FechaInicio, 
-        P.FechaFin, P.TiempoEstimado, P.TiempoTotal, P.CodigoEmpleado, P.Serie, U.Nombres, U.Apellidos
+        P.FechaFin, P.TiempoEstimado, P.TiempoTotal, P.Serie, U.Nombres, U.Apellidos, P.Usuario
         FROM IND_DESARROLLO_PRODUCTOS P 
-          LEFT JOIN GEN_USUARIOS U ON P.CodigoEmpleado = U.CodigoEmpleado
+          LEFT JOIN GEN_USUARIOS U ON P.Usuario = U.Usuario
         WHERE P.DesarrolloProductoId = @ProductoId
           `)
       return resultado.recordset
@@ -75,7 +95,7 @@ export class NuevoProducto {
     descripcion = null,
     estado = 3,
     rechazos = 0,
-    codigoEmpleado,
+    usuario,
     serie
   }) {
     try {
@@ -86,16 +106,16 @@ export class NuevoProducto {
         .input('Descripcion', sql.VarChar(255), descripcion)
         .input('Estado', sql.SmallInt, estado)
         .input('Rechazos', sql.SmallInt, rechazos)
-        .input('CodigoEmpleado', sql.SmallInt, codigoEmpleado)
+        .input('Usuario', sql.VarChar(20), usuario)
         .input('Serie', sql.Char(1), serie)
       // console.log(nombre, descripcion)
       const resultado = await request.query(`
-          INSERT INTO IND_DESARROLLO_PRODUCTOS (Nombre, Descripcion, Estado, Rechazos, CodigoEmpleado, Serie)
+          INSERT INTO IND_DESARROLLO_PRODUCTOS (Nombre, Descripcion, Estado, Rechazos, Usuario, Serie)
           OUTPUT INSERTED.DesarrolloProductoId 
-          VALUES (@Nombre, @Descripcion, @Estado, 0, @CodigoEmpleado, @Serie)
+          VALUES (@Nombre, @Descripcion, @Estado, 0, @Usuario, @Serie)
           `)
       // console.log('Id generado: ', resultado.recordset[0].DesarrolloProductoId)
-      console.log(codigoEmpleado)
+      console.log(usuario)
       console.log(
         'Insertando el Producto Nuevo...',
         resultado.recordset[0].DesarrolloProductoId
@@ -148,7 +168,7 @@ export class NuevoProducto {
         fechaFin: sql.Date,
         tiempoEstimado: sql.Int,
         tiempoTotal: sql.Int,
-        codigoEmpleado: sql.SmallInt,
+        usuario: sql.VarChar(20),
         serie: sql.Char(1)
       }
 

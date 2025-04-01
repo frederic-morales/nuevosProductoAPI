@@ -10,6 +10,7 @@ const app = express()
 app.disable('x-powered-by')
 app.use(express.json())
 app.use(cors())
+
 app.use('/', producto_router())
 app.use('/', etapa_router())
 app.use('/', usuario_router())

@@ -5,6 +5,7 @@ export class Usuarios_con {
   //-------------------------
   //  GETS
   //-------------------------
+
   //TRAE TODOS LOS USUARIOS
   getAll = async (req, res) => {
     try {
@@ -40,6 +41,7 @@ export class Usuarios_con {
   //-------------------------
   //  POST
   //-------------------------
+
   //VERIFICACION DE USUARIO LOGIN
   verificacionUsuario = async (req, res) => {
     const { Usuario, Password } = req.body
@@ -54,7 +56,6 @@ export class Usuarios_con {
         Password
       })
       const usuario = await usuarios.informacionUsuario({ Usuario })
-
       switch (verificacion) {
         case 0:
           res.status(200).json({
