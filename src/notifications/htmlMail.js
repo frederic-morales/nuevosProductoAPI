@@ -1,5 +1,10 @@
-const mailHtml = () => {
-  const mensaje = 'holaaa'
+const mailHtml = (etapaInfo) => {
+  console.log(etapaInfo)
+
+  // Obtener la fecha actual
+  const hoy = new Date()
+  const opciones = { day: '2-digit', month: 'long', year: 'numeric' }
+  const fechaFormateada = hoy.toLocaleDateString('es-ES', opciones)
 
   return `
 <!DOCTYPE html>
@@ -30,9 +35,10 @@ const mailHtml = () => {
         text-align: center;
         font-weight: Bold;
         padding: 15px;
-        font-size: 24px;
+        font-size: 19px;
         border-top-left-radius: 5px;
         border-top-right-radius: 5px;
+        text-transform: uppercase;
       }
       .content {
         padding: 20px;
@@ -45,7 +51,7 @@ const mailHtml = () => {
         width: 200px;
         margin: 20px auto;
         padding: 10px;
-        background: #ffffff;
+        background: #000000;
         color: white;
         text-align: center;
         text-decoration: none;
@@ -61,23 +67,55 @@ const mailHtml = () => {
         font-size: 14px;
         color: #777;
       }
+      .etapaIniciada {
+        font-weight: bold;
+        color: #6495ED;
+        text-align: center;
+        text-transform: uppercase;
+      }
+      .etapaRechazada {
+        font-weight: bold;
+        color: "red";
+        text-align: center;
+        text-transform: uppercase;
+      }
+      .etapaAprobada {
+        font-weight: bold;
+        color: "green";
+        text-align: center;
+        text-transform: uppercase;
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="header">🔔 Notificación Importante</div>
+      <div class="header">🔔 Notificación para el producto ${
+        etapaInfo?.NombreProducto
+      }</div>
       <div class="content">
-        <p>Hola <b>Se acaba de realizar la siguiente accion para el Producto ${'Producto1'}</b>,</p>
-        <p>
-          ${'Aprobacion de la etapa1'} 
-        </p>
+        <p>Se acaba de realizar la siguiente accion: <b></b></p>
+          ${
+            etapaInfo?.ProgresoEstado === 3
+              ? `<p class="etapaIniciada">Etapa Iniciada <br> ${etapaInfo?.NombreEtapa}</p>`
+              : ''
+          }
+          ${
+            etapaInfo?.ProgresoEstado === 2
+              ? `<p class="etapaIniciada">Etapa Rechazada <br> ${etapaInfo?.NombreEtapa}</p>`
+              : ''
+          }
+          ${
+            etapaInfo?.ProgresoEstado === 1
+              ? `<p class="etapaIniciada">Etapa Aprobada <br> ${etapaInfo?.NombreEtapa}</p>`
+              : ''
+          }
         <p>Detalles:</p>
         <ul>
-          <li><b>Fecha:</b> El ${'01 04 2025'}</li>
-          <li><b>Mensaje:</b> ${mensaje}</li>
+          <li><b>Fecha:</b> El ${fechaFormateada}</li>
+          <li><b>Usuario:</b> ${etapaInfo?.Nombres} ${etapaInfo?.Apellidos}</li>
         </ul>
-        <p>Puedes ver más detalles accediendo al sistema.</p>
-        <a href="google.com" class="button">Ver Notificación</a>
+        <p>Puedes ver más detalles accediendo al sistema</p>
+        <a href="http://localhost:5173/Producto/All" class="button">Productos Nuevos</a>
       </div>
       <div class="footer">
         © 2025 Wellco Corporation. Departamento de tecnología.

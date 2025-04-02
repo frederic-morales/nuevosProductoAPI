@@ -1,6 +1,9 @@
 import { Etapas_sql } from '../sql/etapas.js'
+import { NuevoProducto } from '../sql/producto.js'
 import sendNotificacion from '../notifications/sendEmail.js'
+
 const etapas = new Etapas_sql()
+const producto = new NuevoProducto()
 
 export class Etapa {
   //-------------------------
@@ -184,14 +187,15 @@ export class Etapa {
         Usuario,
         DesarrolloProductoId
       })
+
       // console.log(resInsert)
-      //Actualiza el estado la etapa asignada
+      // Actualiza el estado la etapa asignada
       const resUpdate = await etapas.actualizarEstadoAsignacion({
         DesarrolloProductoId,
         EtapaId
       })
 
-      //Envia Notificacion de Inicio de Etapa
+      //Enviar Notificacion de Inicio de Etapa
       const resEnviarNotificacion = await sendNotificacion({
         DesarrolloProductoId,
         EtapaId
@@ -213,11 +217,26 @@ export class Etapa {
 
   //INSERTA UN REGISTRO EN IND_PROGRESO_ETAPAS_HISTORIAL
   agregarActualizacion = async (req, res) => {
-    const { ProgresoEtapaId, RutaDoc, Descripcion, Estado, EstadoDescripcion } =
-      req.body
-    if (!ProgresoEtapaId || !Estado || !EstadoDescripcion) {
+    const {
+      ProgresoEtapaId,
+      RutaDoc,
+      Descripcion,
+      Estado,
+      EstadoDescripcion,
+      DesarrolloProductoId,
+      EtapaId,
+      Rechazos
+    } = req.body
+    if (
+      !ProgresoEtapaId ||
+      !Estado ||
+      !EstadoDescripcion ||
+      !DesarrolloProductoId ||
+      !EtapaId
+    ) {
       res.status(400).json({
-        mensaje: 'ProgresoEtapaId y Estado y EstadoDescri son obligatorios'
+        mensaje:
+          'ProgresoEtapaId, Estado, EstadoDescripcion, DesarrolloProductoId y EtapaId son obligatorios'
       })
       return
     }
@@ -230,16 +249,53 @@ export class Etapa {
         Descripcion
       })
 
-      const actualizacion = await etapas.actualizarProgresoEtapa({
-        Estado,
-        ProgresoEtapaId,
-        EstadoDescripcion
+      const actualizacionAsignacion = await etapas.actualizarEstadoAsignacion({
+        DesarrolloProductoId,
+        EtapaId,
+        Estado
       })
+
+      //Si el usuario rechaza una etapa se suma 1 a rechazos del producto
+      if (Estado == 2) {
+        const updates = {
+          rechazos: Rechazos
+        }
+        const productoActualizacion = await producto.update({
+          DesarrolloProductoId,
+          updates
+        })
+
+        console.log(productoActualizacion)
+      }
+
+      // console.log('Estadooooo:', Estado)
+      // si estado es 2 = rechazo, 1 = Aprobacion, si es 3 = etapa en progreso
+      if (Estado != 3) {
+        const actualizacionProgreso = await etapas.actualizarProgresoEtapa({
+          Estado,
+          ProgresoEtapaId,
+          EstadoDescripcion
+        })
+
+        const resEnviarNotificacion = await sendNotificacion({
+          DesarrolloProductoId,
+          EtapaId
+        })
+
+        res.status(200).json({
+          mensaje: 'Actualizacion agregada con exito',
+          response: response,
+          actualizacionProgreso: actualizacionProgreso,
+          actualizacionAsignacion: actualizacionAsignacion,
+          resEnviarNotificacion: resEnviarNotificacion
+        })
+        return
+      }
 
       res.status(200).json({
         mensaje: 'Actualizacion agregada con exito',
         response: response,
-        actualizacion: actualizacion
+        actualizacionAsignacion: actualizacionAsignacion
       })
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)

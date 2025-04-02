@@ -8,12 +8,12 @@ config()
 import { Etapas_sql } from '../sql/etapas.js'
 const etapas = new Etapas_sql()
 
-const sendMail = async (mails) => {
+const sendMail = async (etapa) => {
   const mailOptions = {
     from: processs.env.MAILSENDER,
-    to: `${mails}, tocomorales30@gmail.com`,
+    to: `${etapa?.Correo}`,
     subject: 'Enviando correo de prueba',
-    html: `${mailHtml()}`
+    html: `${mailHtml(etapa)}`
   }
 
   transporter.sendMail(mailOptions, (error, info) => {
@@ -27,18 +27,17 @@ const sendMail = async (mails) => {
   })
 }
 
-// sendMail('desarrollador2@wellcopharma.com', 'Holaa')
 const sendNotificacion = async ({ DesarrolloProductoId, EtapaId }) => {
   const etapaUsuario = await etapas.getEtapaUsuario({
     DesarrolloProductoId,
     EtapaId
   })
 
-  console.log(etapaUsuario)
-  const emails = await etapaUsuario?.Correo
+  // console.log(etapaUsuario)
+  // const emails = await etapaUsuario?.Correo
 
-  if (emails) {
-    return await sendMail(emails)
+  if (etapaUsuario) {
+    return await sendMail(etapaUsuario)
   } else {
     console.log('Sin correo')
   }

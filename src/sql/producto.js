@@ -152,13 +152,13 @@ export class NuevoProducto {
   //-------------------------
   //  UPDATES
   //-------------------------
-  //ACTUALIZA LOS CAMPOS DEL PRODUCTO
-  async update({ desarrolloProductoId, updates }) {
+  //ACTUALIZA LOS CAMPOS DEL PRODUCTO - ACTUALIZA UNICAMENTE LOS CAMPOS RECIBIDOS
+  async update({ DesarrolloProductoId, updates }) {
     try {
       const pool = await poolPromise
       const request = pool
         .request()
-        .input('DesarrolloProductoId', sql.Int, desarrolloProductoId)
+        .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
 
       const fieldTypes = {
         nombre: sql.VarChar(100),

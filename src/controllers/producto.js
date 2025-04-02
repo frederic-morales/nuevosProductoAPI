@@ -182,8 +182,10 @@ export class Producto {
         console.log('desarrolloProductoId no recibido')
         return
       }
+
+      const DesarrolloProductoId = desarrolloProductoId
       const response = await nuevoProducto.update({
-        desarrolloProductoId,
+        DesarrolloProductoId,
         updates
       })
 

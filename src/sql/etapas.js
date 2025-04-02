@@ -30,11 +30,13 @@ export class Etapas_sql {
         .input('EtapaId', sql.Int, etapaId)
 
       const resultado = await request.query(`
-          SELECT E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado, 
-            A.EtapasAsignadasId, A.DesarrolloProducto, A.Estado AS AsignacionEstado,
+          SELECT DP.DesarrolloProductoId, DP.Nombre AS NombreProducto, DP.Rechazos, 
+            E.EtapaId, E.Nombre AS NombreEtapa, E.Descripcion, E.FechaCreacion, E.TiempoEstimado, 
+            A.EtapasAsignadasId, A.Estado AS AsignacionEstado,
             P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.DescripcionEstado
           FROM IND_ETAPAS E
             JOIN IND_ETAPAS_ASIGNADAS A ON E.EtapaId = A.EtapaId
+            JOIN IND_DESARROLLO_PRODUCTOS DP ON DP.DesarrolloProductoId = A.DesarrolloProducto 
             LEFT JOIN IND_PROGRESO_ETAPAS P ON A.EtapaId = P.Etapa AND P.DesarrolloProducto = A.DesarrolloProducto
           WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.EtapaId = @EtapaId
           `)
@@ -162,7 +164,7 @@ export class Etapas_sql {
       console.error('Error al obtener el Historial de la etapa!!:', err)
     }
   }
-
+  //TRAE LA INFORMACION DE LA ETAPA Y EL USUARIO PARA ENVIAR LA NOTIFICAICION POR MAIL
   async getEtapaUsuario({ DesarrolloProductoId, EtapaId }) {
     try {
       const pool = await poolPromise
@@ -172,8 +174,8 @@ export class Etapas_sql {
         .input('EtapaId', sql.Int, EtapaId)
       const resultado = await request.query(`
           SELECT P.ProgresoEtapaId, P.Estado AS ProgresoEstado, P.FechaInicio,
-            D.DesarrolloProductoId, D.Nombre, D.Descripcion, 
-            E.EtapaId, E.TiempoEstimado, 
+            D.DesarrolloProductoId, D.Nombre AS NombreProducto,  D.Serie,
+            E.Nombre AS NombreEtapa, E.EtapaId, E.TiempoEstimado, 
             U.Nombres, U.Apellidos, U.CorreoEmpresa AS Correo
           FROM IND_PROGRESO_ETAPAS P
             JOIN IND_DESARROLLO_PRODUCTOS D ON P.DesarrolloProducto = D.DesarrolloProductoId
@@ -181,7 +183,7 @@ export class Etapas_sql {
             JOIN GEN_USUARIOS U ON U.Usuario = P.Usuario
             WHERE P.DesarrolloProducto = @DesarrolloProductoId AND E.EtapaId = @EtapaId`)
 
-      console.log('Traendo la informacion de la etapa con el usuario ', EtapaId)
+      console.log('Traendo la informacion de la etapa con el usuario')
       console.log('-------------------------')
       return await resultado?.recordset[0]
     } catch (err) {
@@ -333,7 +335,7 @@ export class Etapas_sql {
   //Actualiza el progreso de la etapa en IND_PROGRESO_ETAPAS
   async actualizarProgresoEtapa({
     Estado,
-    FechaFinal,
+    FechaFinal = new Date(),
     ProgresoEtapaId,
     EstadoDescripcion
   }) {
@@ -364,7 +366,6 @@ export class Etapas_sql {
   //-------------------------
   //  DELETES
   //-------------------------
-
   //ELIMINA UN USUARIO ASIGNADO DE LA ETAPA
   async deleteUsuarioDeEtapa({ EtapaId, Usuario }) {
     try {
