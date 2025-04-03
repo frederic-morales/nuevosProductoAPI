@@ -27,7 +27,8 @@ export class Etapa {
         return {
           ...etapa,
           usuariosAsignados: usuarios,
-          procesosResponsables: procesosResponsables
+          procesosResponsables: procesosResponsables,
+          PermitirInicio: true
         }
       })
       // Espera a que todas las consultas se completen antes de enviar la informacion al usuario
@@ -70,14 +71,22 @@ export class Etapa {
     }
 
     try {
-      const infoEtapa = await etapas.getProgresoInfo({
+      const etapaResponse = await etapas.getProgresoInfo({
         desarrolloProductoId,
         etapaId
       })
 
-      res
-        .status(200)
-        .json({ message: `Traendo la etapa ${etapaId}`, infoEtapa: infoEtapa })
+      const permitirInicio = await etapas.verificarDependencias({
+        DesarrolloProductoId: desarrolloProductoId,
+        EtapaId: etapaId
+      })
+
+      const infoEtapa = {
+        ...etapaResponse,
+        PermitirInicio: permitirInicio === 1 ? true : false
+      }
+
+      res.status(200).json({ infoEtapa })
       console.log(infoEtapa)
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)
@@ -136,6 +145,7 @@ export class Etapa {
       const usuariosParaAgregar = Usuarios.filter(
         (usuario) => !currentSet.has(usuario.Usuario)
       )
+
       const usuariosParaEliminar = usuariosAnteriores.filter(
         (usuario) => !newSet.has(usuario.Usuario)
       )
@@ -188,7 +198,6 @@ export class Etapa {
         DesarrolloProductoId
       })
 
-      // console.log(resInsert)
       // Actualiza el estado la etapa asignada
       const resUpdate = await etapas.actualizarEstadoAsignacion({
         DesarrolloProductoId,
@@ -219,7 +228,7 @@ export class Etapa {
   agregarActualizacion = async (req, res) => {
     const {
       ProgresoEtapaId,
-      RutaDoc,
+      UploadFile,
       Descripcion,
       Estado,
       EstadoDescripcion,
@@ -241,11 +250,19 @@ export class Etapa {
       return
     }
 
+    // console.log('Doc..', UploadFile)
+    // if (req.file) {
+    //   console.log('Archivo guardado correctamente..')
+    //   res
+    //     .status(200)
+    //     .json({ message: 'Archivo guardado...', file: req.file.filename })
+    // }
+
     try {
       const response = await etapas.agregarActualizacion({
         ProgresoEtapaId,
         Estado,
-        RutaDoc,
+        UploadFile,
         Descripcion
       })
 
@@ -267,6 +284,9 @@ export class Etapa {
 
         console.log(productoActualizacion)
       }
+
+      // if (File) {
+      // }
 
       // console.log('Estadooooo:', Estado)
       // si estado es 2 = rechazo, 1 = Aprobacion, si es 3 = etapa en progreso

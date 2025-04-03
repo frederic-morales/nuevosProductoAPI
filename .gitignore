@@ -23,6 +23,8 @@ lib-cov
 coverage
 *.lcov
 
+files
+
 *.http
 
 # nyc test coverage

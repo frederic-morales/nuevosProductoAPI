@@ -41,29 +41,28 @@ export class Etapas_sql {
           WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.EtapaId = @EtapaId
           `)
       console.log(resultado.recordset)
-      return resultado.recordset
+      return resultado.recordset[0]
     } catch (err) {
       console.error('Error al traer las Etapas!!:', err)
     }
   }
 
-  //TRAE TODAS LAS ETAPAS DEL PRODUCTO DADO
-  async etapasPorProducto({ productoId }) {
+  //TRAE TODAS LAS ETAPAS DEL PRODUCTO SELECCIONADO
+  async etapasPorProducto({ DesarrolloProductoId }) {
     try {
       const pool = await poolPromise
       const request = pool.request()
-      request.input('DesarrolloProducto', sql.Int, productoId)
-      const resultado = await request.query(`
-          SELECT A.DesarrolloProducto AS ProductoId, A.Estado AS ProductoEstado, A.EtapasAsignadasId,
+      request.input('DesarrolloProducto', sql.Int, DesarrolloProductoId)
+      const resultado =
+        await request.query(`SELECT A.DesarrolloProducto AS ProductoId, A.Estado AS ProductoEstado, A.EtapasAsignadasId,
             E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
             P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado
-          FROM IND_ETAPAS E
+            FROM IND_ETAPAS E
             JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
             LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId AND P.DesarrolloProducto = A.DesarrolloProducto
           WHERE A.DesarrolloProducto = @DesarrolloProducto
-          ORDER BY EtapaId   
-            `)
-      console.log('Traendo todas las etapas del producto', productoId)
+          ORDER BY EtapaId`)
+      console.log('Traendo todas las etapas del producto', DesarrolloProductoId)
       console.log('-------------------------')
       return resultado.recordset
     } catch (err) {
@@ -164,6 +163,7 @@ export class Etapas_sql {
       console.error('Error al obtener el Historial de la etapa!!:', err)
     }
   }
+
   //TRAE LA INFORMACION DE LA ETAPA Y EL USUARIO PARA ENVIAR LA NOTIFICAICION POR MAIL
   async getEtapaUsuario({ DesarrolloProductoId, EtapaId }) {
     try {
@@ -186,6 +186,23 @@ export class Etapas_sql {
       console.log('Traendo la informacion de la etapa con el usuario')
       console.log('-------------------------')
       return await resultado?.recordset[0]
+    } catch (err) {
+      console.error('Error al traer la etapa con el usuario!!:', err)
+    }
+  }
+
+  //VERIFICA SI LAS DEPENDENCIAS DE UNA ETAPA ESTAN COMPLETAS
+  async verificarDependencias({ DesarrolloProductoId, EtapaId }) {
+    try {
+      const pool = await poolPromise
+      const request = await pool
+        .request()
+        .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
+        .input('EtapaId', sql.Int, EtapaId)
+
+      const result = await request.execute('SP_VERIFICAR_DEPENDENCIAS_ETAPA_V2')
+      // console.log(result)
+      return result.returnValue
     } catch (err) {
       console.error('Error al traer la etapa con el usuario!!:', err)
     }

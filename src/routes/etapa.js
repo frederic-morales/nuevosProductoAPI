@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { Etapa } from '../controllers/etapa.js'
+import { saveFile } from '../files/files.js'
+// saveFile.single('RutaDoc'),
 
 const etapa = new Etapa()
 
@@ -17,6 +19,10 @@ export const etapa_router = () => {
   //POST
   router.post('/etapa/asignarUsuarios', etapa.asignarUsuarios)
   router.post('/etapa/iniciar', etapa.iniciarEtapa)
-  router.post('/etapa/progreso/actualizacion', etapa.agregarActualizacion)
+  router.post(
+    '/etapa/progreso/actualizacion',
+    saveFile.single('archivo'),
+    etapa.agregarActualizacion
+  )
   return router
 }

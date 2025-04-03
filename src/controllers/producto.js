@@ -76,27 +76,42 @@ export class Producto {
     }
   }
 
-  //TRAER TODAS SUS ETAPAS
+  //TRAE TODAS LAS ETAPAS DE UN PRODUCTO
   getEtapas = async (req, res) => {
     const productoId = req.params.productoId
     if (!productoId) {
       res.status(400).json({ message: 'El Id del producto es obligatorio' })
       return
     }
-
     try {
-      const etapasProducto = await etapas.etapasPorProducto({ productoId })
+      const etapasProducto = await etapas.etapasPorProducto({
+        DesarrolloProductoId: productoId
+      })
+
       const etapasConUsuarios = etapasProducto.map(async (etapa) => {
         const EtapaId = etapa?.EtapaId
+
+        // TRAE LOS USUARIOS ASIGNADOS A CADA ETAPA
         const usuarios = await etapas.getUsuariosAsignados({ EtapaId })
+
+        // TRAE LOS PROCESOS ASIGNADOS A CADA ETAPA
         const procesosResponsables = await etapas.getProcesosResponsables({
           EtapaId
         })
+
+        // VERIFICA QUE ETAPA SE PUEDE INICIAR
+        const permitirInicio = await etapas.verificarDependencias({
+          DesarrolloProductoId: productoId,
+          EtapaId: EtapaId
+        })
+
         return {
           ...etapa,
           usuariosAsignados: usuarios,
-          procesosResponsables: procesosResponsables
+          procesosResponsables: procesosResponsables,
+          PermitirInicio: permitirInicio === 1 ? true : false // SI EL SP RETORNA 1 ES PORQUE LA ETAPA SE PUEDE INICIAR
         }
+        //
       })
 
       // Espera a que todas las consultas se completen antes de enviar la informacion al usuario
@@ -105,8 +120,6 @@ export class Producto {
         mensaje: `Traendo las etapas del producto ${productoId}...`,
         productoEtapas: response
       })
-
-      console.log(response)
     } catch (err) {
       console.error('Error al traer las etapas del producto:', err)
       res.status(500).json({ error: 'Error al traer las etapas del producto' })
@@ -116,6 +129,7 @@ export class Producto {
   //-------------------------
   //  POST
   //-------------------------
+
   //INICIAR UN PRODUCTO NUEVO
   createProductoNuevo = async (req, res) => {
     const { nombre, descripcion, usuario, serie } = req.body
@@ -166,9 +180,11 @@ export class Producto {
       res.status(500).json({ error: 'Error en la asignación de etapas' })
     }
   }
+
   //-------------------------
   //  PATCH
   //-------------------------
+
   //UPDATE PRODUCTO
   update = async (req, res) => {
     const { desarrolloProductoId, updates } = req.body
