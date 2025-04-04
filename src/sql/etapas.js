@@ -40,7 +40,7 @@ export class Etapas_sql {
             LEFT JOIN IND_PROGRESO_ETAPAS P ON A.EtapaId = P.Etapa AND P.DesarrolloProducto = A.DesarrolloProducto
           WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.EtapaId = @EtapaId
           `)
-      console.log(resultado.recordset)
+      // console.log(resultado.recordset)
       return resultado.recordset[0]
     } catch (err) {
       console.error('Error al traer las Etapas!!:', err)
@@ -108,14 +108,14 @@ export class Etapas_sql {
         WHERE G.EtapaId = @EtapaId`)
       console.log('Traendo los usuarios asignados a la etapa: ', EtapaId)
       console.log('-------------------------')
-      console.log(resultado.recordset)
+      // console.log(resultado.recordset)
       return resultado.recordset
     } catch (err) {
       console.error('Error al obtener los usuarios asignados!!:', err)
     }
   }
 
-  // TRAE TODAS LAS ACTUALIZACIONES DEL PROGRESO DE UNA ETAPA
+  // TRAE EL HISTORIAL DE LA ETAPA EN PROGRESO
   async getProgresoHistorial({ DesarrolloProductoId, EtapaId }) {
     try {
       const pool = await poolPromise
@@ -125,16 +125,15 @@ export class Etapas_sql {
         .input('EtapaId', sql.Int, EtapaId)
 
       const resultado = await request.query(`
-          SELECT P.ProgresoEtapaId, P.DesarrolloProducto AS Producto, P.Etapa, P.FechaInicio, P.Estado AS ProgresoEstado,
+          SELECT H.ProEtapaHistorialId, P.ProgresoEtapaId, P.DesarrolloProducto AS Producto, P.Etapa, P.FechaInicio, P.Estado AS ProgresoEstado,
 	          H.ProEtapaHistorialId AS HistorialId, H.Estado AS ActualizacionEstado, H.RutaDoc, H.Descripcion, H.FechaActualizacion
           FROM IND_PROGRESO_ETAPAS P
             JOIN IND_PROGRESO_ETAPAS_HISTORIAL H ON H.ProgresoEtapa = P.ProgresoEtapaId
           WHERE P.DesarrolloProducto = @DesarrolloProducto AND P.Etapa = @EtapaId
         `)
-
       console.log('Traendo el Historial de la etapa ', EtapaId)
       console.log('-------------------------')
-      console.log(resultado.recordset)
+      // console.log(resultado.recordset)
       return resultado.recordset
     } catch (err) {
       console.error('Error al obtener el Historial de la etapa!!:', err)

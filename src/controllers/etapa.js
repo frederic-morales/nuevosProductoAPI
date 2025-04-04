@@ -1,6 +1,7 @@
 import { Etapas_sql } from '../sql/etapas.js'
 import { NuevoProducto } from '../sql/producto.js'
 import sendNotificacion from '../notifications/sendEmail.js'
+import fs from 'fs'
 
 const etapas = new Etapas_sql()
 const producto = new NuevoProducto()
@@ -87,7 +88,7 @@ export class Etapa {
       }
 
       res.status(200).json({ infoEtapa })
-      console.log(infoEtapa)
+      // console.log(infoEtapa)
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)
       res.status(500).json({ error: 'Error en la obtención de la etapa' })
@@ -97,8 +98,6 @@ export class Etapa {
   getProgresoHistorial = async (req, res) => {
     const DesarrolloProductoId = req.params.ProductoId
     const EtapaId = req.params.EtapaId
-
-    console.log(DesarrolloProductoId, EtapaId)
 
     if (!DesarrolloProductoId || !EtapaId) {
       res.status(400).json({
@@ -116,11 +115,31 @@ export class Etapa {
         message: `Traendo el historial de la etapa ${EtapaId}`,
         response: response
       })
-      console.log(response)
+      // console.log(response)
     } catch (err) {
       console.error('❌ Error al obtener el historial de la etapa:', err)
       res.status(500).json({ error: 'Error al obtener el historial' })
     }
+  }
+
+  // TRAE EL ARCHIVO DE PROGRESO
+  getFileProgreso = async (req, res) => {
+    const { rutaFile } = req.params
+    if (!rutaFile) {
+      res.status(400).json({ message: 'El parametro rutaFile es obligatorio' })
+    }
+
+    if (!fs.existsSync(rutaFile)) {
+      res.status(404).json({ message: 'El archivo no existe' })
+      return
+    }
+
+    res.dowload(rutaFile, (err) => {
+      if (err) {
+        console.error('Error al descargar el archivo:', err)
+        res.status(500).json({ error: 'Error al descargar el archivo' })
+      }
+    })
   }
 
   //-------------------------
@@ -228,7 +247,6 @@ export class Etapa {
   agregarActualizacion = async (req, res) => {
     const {
       ProgresoEtapaId,
-      UploadFile,
       Descripcion,
       Estado,
       EstadoDescripcion,
@@ -250,19 +268,17 @@ export class Etapa {
       return
     }
 
-    // console.log('Doc..', UploadFile)
-    // if (req.file) {
-    //   console.log('Archivo guardado correctamente..')
-    //   res
-    //     .status(200)
-    //     .json({ message: 'Archivo guardado...', file: req.file.filename })
-    // }
+    if (req.file) {
+      console.log('Subiendo archivo...')
+    } else {
+      console.log('No se subió ningún archivo.')
+    }
 
     try {
       const response = await etapas.agregarActualizacion({
         ProgresoEtapaId,
         Estado,
-        UploadFile,
+        RutaDoc: req?.file?.path || null,
         Descripcion
       })
 
@@ -284,9 +300,6 @@ export class Etapa {
 
         console.log(productoActualizacion)
       }
-
-      // if (File) {
-      // }
 
       // console.log('Estadooooo:', Estado)
       // si estado es 2 = rechazo, 1 = Aprobacion, si es 3 = etapa en progreso
@@ -311,6 +324,8 @@ export class Etapa {
         })
         return
       }
+
+      console.log('Actualizacion del progreso ingresada...')
 
       res.status(200).json({
         mensaje: 'Actualizacion agregada con exito',

@@ -1,8 +1,7 @@
 import { Router } from 'express'
 import { Etapa } from '../controllers/etapa.js'
-import { saveFile } from '../files/files.js'
+import { uploadFile } from '../files/files.js'
 // saveFile.single('RutaDoc'),
-
 const etapa = new Etapa()
 
 export const etapa_router = () => {
@@ -16,12 +15,14 @@ export const etapa_router = () => {
     '/etapas/:ProductoId/historial/:EtapaId',
     etapa.getProgresoHistorial
   )
+  router.get('/etapa/historial/:rutaFile', etapa.getFileProgreso)
+
   //POST
   router.post('/etapa/asignarUsuarios', etapa.asignarUsuarios)
   router.post('/etapa/iniciar', etapa.iniciarEtapa)
   router.post(
     '/etapa/progreso/actualizacion',
-    saveFile.single('archivo'),
+    uploadFile.single('Archivo'),
     etapa.agregarActualizacion
   )
   return router
