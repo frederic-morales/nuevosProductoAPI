@@ -297,7 +297,6 @@ export class Etapa {
           DesarrolloProductoId,
           updates
         })
-
         console.log(productoActualizacion)
       }
 
@@ -309,12 +308,10 @@ export class Etapa {
           ProgresoEtapaId,
           EstadoDescripcion
         })
-
         const resEnviarNotificacion = await sendNotificacion({
           DesarrolloProductoId,
           EtapaId
         })
-
         res.status(200).json({
           mensaje: 'Actualizacion agregada con exito',
           response: response,
@@ -326,7 +323,6 @@ export class Etapa {
       }
 
       console.log('Actualizacion del progreso ingresada...')
-
       res.status(200).json({
         mensaje: 'Actualizacion agregada con exito',
         response: response,
@@ -335,6 +331,33 @@ export class Etapa {
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)
       res.status(500).json({ error: 'Error en la obtención de la etapa' })
+    }
+  }
+
+  //-------------------------
+  //  DELETE
+  //-------------------------
+  deleteHistorialEtapa = async (req, res) => {
+    const { ProEtapaHistorialId } = req.body
+    console.log(ProEtapaHistorialId)
+    if (!ProEtapaHistorialId) {
+      res.status(400).json({
+        mensaje: 'El ProgresoEtapaId es obligatorio para eliminar el registro'
+      })
+      return
+    }
+
+    try {
+      const response = await etapas.deleteEtapaHistorial({
+        ProEtapaHistorialId
+      })
+      res.status(200).json({
+        mensaje: 'Registro eliminado correctamente...',
+        response: response
+      })
+    } catch (err) {
+      console.error('❌ Error al eliminar el registro:', err)
+      res.status(500).json({ error: 'Error al eliminar el registro' })
     }
   }
 }

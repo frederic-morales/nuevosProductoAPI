@@ -401,4 +401,23 @@ export class Etapas_sql {
       console.error('Error al eliminar un usuario de la etapa!!:', err)
     }
   }
+
+  async deleteEtapaHistorial({ ProEtapaHistorialId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool
+        .request()
+        .input('ProEtapaHistorialId', sql.Int, ProEtapaHistorialId)
+
+      const resultado = await request.query(`
+        DELETE IND_PROGRESO_ETAPAS_HISTORIAL WHERE ProEtapaHistorialId = @ProEtapaHistorialId
+      `)
+
+      console.log('Eliminando el historial de la etapa: ', ProEtapaHistorialId)
+      console.log('-------------------------')
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al eliminar un usuario de la etapa!!:', err)
+    }
+  }
 }

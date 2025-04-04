@@ -25,5 +25,7 @@ export const etapa_router = () => {
     uploadFile.single('Archivo'),
     etapa.agregarActualizacion
   )
+  //DELETE
+  router.delete('/etapa/historial', etapa.deleteHistorialEtapa)
   return router
 }
