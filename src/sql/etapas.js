@@ -33,7 +33,7 @@ export class Etapas_sql {
           SELECT DP.DesarrolloProductoId, DP.Nombre AS NombreProducto, DP.Rechazos, 
             E.EtapaId, E.Nombre AS NombreEtapa, E.Descripcion, E.FechaCreacion, E.TiempoEstimado, 
             A.EtapasAsignadasId, A.Estado AS AsignacionEstado,
-            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.DescripcionEstado
+            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.DescripcionEstado, P.Correlativo
           FROM IND_ETAPAS E
             JOIN IND_ETAPAS_ASIGNADAS A ON E.EtapaId = A.EtapaId
             JOIN IND_DESARROLLO_PRODUCTOS DP ON DP.DesarrolloProductoId = A.DesarrolloProducto 
@@ -54,9 +54,9 @@ export class Etapas_sql {
       const request = pool.request()
       request.input('DesarrolloProducto', sql.Int, DesarrolloProductoId)
       const resultado =
-        await request.query(`SELECT A.DesarrolloProducto AS ProductoId, A.Estado AS ProductoEstado, A.EtapasAsignadasId,
+        await request.query(`SELECT A.DesarrolloProducto AS ProductoId, A.Estado AS AsignacionEstado, A.EtapasAsignadasId,
             E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
-            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado
+            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.Correlativo
             FROM IND_ETAPAS E
             JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
             LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId AND P.DesarrolloProducto = A.DesarrolloProducto
@@ -353,7 +353,8 @@ export class Etapas_sql {
     Estado,
     FechaFinal = new Date(),
     ProgresoEtapaId,
-    EstadoDescripcion
+    EstadoDescripcion,
+    Correlativo = null
   }) {
     try {
       const pool = await poolPromise
@@ -363,10 +364,11 @@ export class Etapas_sql {
         .input('ProgresoEtapaId', sql.Int, ProgresoEtapaId)
         .input('Estado', sql.Int, Estado)
         .input('EstadoDescripcion', sql.VarChar(100), EstadoDescripcion)
+        .input('Correlativo', sql.Int, Correlativo)
 
       const resultado = await request.query(`
         UPDATE IND_PROGRESO_ETAPAS
-          SET Estado = @Estado, FechaFinal = @FechaFinal, DescripcionEstado = @EstadoDescripcion
+          SET Estado = @Estado, FechaFinal = @FechaFinal, DescripcionEstado = @EstadoDescripcion, Correlativo = @Correlativo
         WHERE ProgresoEtapaId = @ProgresoEtapaId
         `)
       console.log(Estado)
@@ -402,6 +404,7 @@ export class Etapas_sql {
     }
   }
 
+  // ELIMINA UN REGISTRO DE ACTUALIZACION DE LA ETAPA
   async deleteEtapaHistorial({ ProEtapaHistorialId }) {
     try {
       const pool = await poolPromise
@@ -415,6 +418,27 @@ export class Etapas_sql {
 
       console.log('Eliminando el historial de la etapa: ', ProEtapaHistorialId)
       console.log('-------------------------')
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al eliminar un usuario de la etapa!!:', err)
+    }
+  }
+
+  // ELIMINA UN REGISTRO DE PROGRESO DE UNA ETAPA
+  async deleteProgresoEtapa({ ProgresoEtapaId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool
+        .request()
+        .input('ProgresoEtapaId', sql.Int, ProgresoEtapaId)
+
+      const resultado = await request.query(`
+          SELECT DELETE IND_PROGRESO_ETAPAS WHERE ProgresoEtapaId = @ProgresoEtapaId
+        `)
+
+      console.log('Eliminando el Progreso de la Etapa: ', ProgresoEtapaId)
+      console.log('-------------------------')
+
       return resultado.recordset
     } catch (err) {
       console.error('Error al eliminar un usuario de la etapa!!:', err)
