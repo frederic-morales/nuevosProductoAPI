@@ -70,6 +70,70 @@ export class Etapas_sql {
     }
   }
 
+  ///NUEVA
+  //TRAE TODAS LAS ETAPAS ASIGNADAS  DEL PRODUCTO SELECCIONADO --
+  async getEtapasAsignadas({ ProductoId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool.request()
+      request.input('DesarrolloProducto', sql.Int, ProductoId)
+      const resultado = await request.query(`
+                SELECT A.DesarrolloProducto AS ProductoId, A.Estado AS AsignacionEstado, A.EtapasAsignadasId, A.Correlativo,
+                  E.EtapaId, E.Nombre, E.Descripcion, E.TiempoEstimado
+                FROM IND_ETAPAS E
+                  JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
+                WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.Correlativo IS NULL
+                ORDER BY EtapaId`)
+      console.log('Trae las etapas asignadas al producto', ProductoId)
+      console.log('-------------------------')
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al traer las Etapas Asignadas!!:', err)
+    }
+  }
+  ///NUEVA
+  //TRAE TODAS LAS ETAPAS INICIADAS DEL PRODUCTO
+  async getEtapasIniciadasAnteriores({ ProductoId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool.request()
+      request.input('DesarrolloProducto', sql.Int, ProductoId)
+      const resultado = await request.query(`
+                SELECT * FROM IND_ETAPAS E
+                  JOIN IND_PROGRESO_ETAPAS P ON E.EtapaId = P.Etapa
+                WHERE P.DesarrolloProducto = @DesarrolloProducto
+                ORDER BY EtapaId`)
+      console.log(
+        'Trae las etapas iniciadas anteriormente al producto',
+        ProductoId
+      )
+      console.log('-------------------------')
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al traer las Etapas Iniciada!!:', err)
+    }
+  }
+
+  //NUEVA
+  //TRAE LAS ETAPAS INICIADAS EN EL PROCESO ACTUAL
+  async getEtapasIniciadasEnProcesoActual({ ProductoId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool.request()
+      request.input('DesarrolloProducto', sql.Int, ProductoId)
+      const resultado = await request.query(`
+                SELECT * FROM IND_ETAPAS E
+                  JOIN IND_PROGRESO_ETAPAS P ON E.EtapaId = P.Etapa
+                WHERE P.DesarrolloProducto = @DesarrolloProducto AND P.Correlativo IS NULL 
+                ORDER BY EtapaId`)
+      console.log('Trae las etapas iniciadas en el proceso actual', ProductoId)
+      console.log('-------------------------')
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al traer iniciadas en el proceso actual!!:', err)
+    }
+  }
+
   //TRAE TODA LA INFORMACION DE LA ETAPA SELECCIONADA
   async historial({ etapaAsignadaId, productoId }) {
     try {
@@ -106,8 +170,8 @@ export class Etapas_sql {
         await request.query(`SELECT G.EtapaId, U.Usuario, U.Nombres, U.Apellidos
           FROM GEN_USUARIOS U JOIN IND_GRUPOS_USUARIOS_ETAPAS G ON G.Usuario = U.Usuario
         WHERE G.EtapaId = @EtapaId`)
-      console.log('Traendo los usuarios asignados a la etapa: ', EtapaId)
-      console.log('-------------------------')
+      // console.log('Traendo los usuarios asignados a la etapa: ', EtapaId)
+      // console.log('-------------------------')
       // console.log(resultado.recordset)
       return resultado.recordset
     } catch (err) {
@@ -154,8 +218,8 @@ export class Etapas_sql {
         WHERE E.EtapaId = @EtapaId
         ORDER BY E.EtapaId`)
 
-      console.log('Traendo los procesos de la etapa ', EtapaId)
-      console.log('-------------------------')
+      // console.log('Traendo los procesos de la etapa ', EtapaId)
+      // console.log('-------------------------')
       // console.log(resultado.recordset)
       return resultado.recordset
     } catch (err) {
@@ -199,7 +263,7 @@ export class Etapas_sql {
         .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
         .input('EtapaId', sql.Int, EtapaId)
 
-      const result = await request.execute('SP_VERIFICAR_DEPENDENCIAS_ETAPA_V2')
+      const result = await request.execute('SP_VERIFICAR_DEPENDENCIAS_ETAPA_V3')
       // console.log(result)
       return result.returnValue
     } catch (err) {
@@ -259,8 +323,8 @@ export class Etapas_sql {
     EtapaId,
     Usuario,
     DesarrolloProductoId,
-    Estado = 3,
-    DescripcionEstado = 'Iniciado'
+    Estado,
+    DescripcionEstado
   }) {
     try {
       const pool = await poolPromise
@@ -321,30 +385,51 @@ export class Etapas_sql {
   //-------------------------
   //Actualiza el estado de la etapa asignada en IND_ETAPAS_ASIGNADAS
   async actualizarEstadoAsignacion({
+    Estado = 3,
     DesarrolloProductoId,
-    EtapaId,
-    Estado = 3
+    EtapaId
   }) {
     try {
       const pool = await poolPromise
       const request = pool
         .request()
-        .input('DesarrolloProducto', sql.Int, DesarrolloProductoId)
+        .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
         .input('EtapaId', sql.Int, EtapaId)
         .input('Estado', sql.Int, Estado)
 
       const resultado = await request.query(`
           UPDATE IND_ETAPAS_ASIGNADAS 
-            SET Estado = @Estado -- 3 = INICIADO
-          WHERE DesarrolloProducto = @DesarrolloProducto AND EtapaId = @EtapaId
+            SET Estado = @Estado
+          WHERE DesarrolloProducto = @DesarrolloProductoId AND EtapaId = @EtapaId
+          AND Correlativo IS NULL
         `)
-      console.log(
-        `Actualizando ${EtapaId} para el producto ${DesarrolloProductoId} en etapas asignadas`
-      )
+      console.log(`Actualizando el estado de la etapa asignada`)
       console.log('-------------------------')
       return resultado
     } catch (err) {
-      console.error('Error al actualizar estado!!:', err)
+      console.error('Actualizando el estado de la etapa asignada!!:', err)
+    }
+  }
+
+  //Actualizar Correlativo de la etapa asignada
+  async actualizarCorrelativo({ Correlativo, EtapasAsignadasId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool
+        .request()
+        .input('EtapasAsignadasId', sql.Int, EtapasAsignadasId)
+        .input('Correlativo', sql.Int, Correlativo)
+
+      const resultado = await request.query(`
+          UPDATE IND_ETAPAS_ASIGNADAS 
+            SET Correlativo = @Correlativo
+          WHERE EtapasAsignadasId = @EtapasAsignadasId
+        `)
+      console.log(`Actualizando el estado de la etapa asignada`)
+      console.log('-------------------------')
+      return await resultado
+    } catch (err) {
+      console.error('Actualizando el estado de la etapa asignada!!:', err)
     }
   }
 

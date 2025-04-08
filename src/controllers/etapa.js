@@ -14,6 +14,31 @@ export class Etapa {
     res.status(200).json({ message: 'Server running - etapa' })
   }
 
+  //NUEVA
+  getEpatasEnProcesoActual = async (req, res) => {
+    try {
+      const DesarrolloProductoId = req.params.ProductoId
+      if (!DesarrolloProductoId) {
+        res.status(400).json({ message: 'El Id del producto es obligatorio' })
+        return
+      }
+
+      const etapasIniciadasEnProcesoActual =
+        await etapas.getEtapasIniciadasEnProcesoActual({
+          ProductoId: DesarrolloProductoId
+        })
+
+      res.status(200).json({
+        etapasEnProcesoActual: etapasIniciadasEnProcesoActual
+      })
+    } catch (err) {
+      console.error('❌ Error al traer iniciadas en el proceso actual:', err)
+      res
+        .status(500)
+        .json({ error: 'Error al traer iniciadas en el proceso actual' })
+    }
+  }
+
   //TRAE TODAS LAS ETAPAS
   getAll = async (req, res) => {
     try {
@@ -52,7 +77,7 @@ export class Etapa {
     try {
       const usuariosAsignados = await etapas.getUsuariosAsignados({ EtapaId })
       res.status(200).json(usuariosAsignados)
-      console.log(usuariosAsignados)
+      // console.log(usuariosAsignados)
     } catch (err) {
       console.error('❌ Error al obtener los usuarios asignados:', err)
       res.status(500).json({ error: 'Error en la obtención de usuarios' })
@@ -214,7 +239,9 @@ export class Etapa {
       const resInsert = await etapas.iniciarEtapa({
         EtapaId,
         Usuario,
-        DesarrolloProductoId
+        DesarrolloProductoId,
+        Estado: 3,
+        DescripcionEstado: 'Iniciado'
       })
 
       // Actualiza el estado la etapa asignada
@@ -304,6 +331,8 @@ export class Etapa {
 
       // console.log('Estadooooo:', Estado)
       // si estado es 2 = rechazo, 1 = Aprobacion, si es 3 = etapa en progreso
+      console.log('Estadooooo', Estado, EstadoDescripcion)
+
       if (Estado != 3) {
         const actualizacionProgreso = await etapas.actualizarProgresoEtapa({
           Estado,
@@ -336,80 +365,84 @@ export class Etapa {
     }
   }
 
-  //ACTUALIZA EL ESTADO DE LAS ETAPAS APROBADAS
-  actualizarEstadoEtapas = async (req, res) => {
+  //reasignas las etapas seleccionadas
+  reasignarEtapas = async (req, res) => {
     try {
-      const { DesarrolloProductoId, Etapas } = req.body
-      if (!DesarrolloProductoId || !Etapas) {
+      const {
+        DesarrolloProductoId,
+        Etapas,
+        Correlativo,
+        EtapasEnProcesoActual
+      } = req.body
+
+      console.log('INFOOO')
+      console.log(
+        DesarrolloProductoId,
+        Etapas,
+        Correlativo,
+        EtapasEnProcesoActual
+      )
+      if (!DesarrolloProductoId || !Etapas || !EtapasEnProcesoActual) {
         res.status(400).json({
           mensaje: 'DesarrolloProductoId y Etapas son obligatorios'
         })
         return
       }
 
-      // for (const etapa of Etapas) {
-      //   const resActualizacionAsignacion =
-      //     await etapas.actualizarEstadoAsignacion({
-      //       DesarrolloProductoId: DesarrolloProductoId,
-      //       EtapaId: etapa.EtapaId,
-      //       Estado: null
-      //     })
-
-      //   const resActualizacionProgreso = await etapas.actualizarProgresoEtapa({
-      //     Estado: null,
-      //     ProgresoEtapaId: etapa.ProgresoEtapaId,
-      //     EstadoDescripcion: null
-      //   })
-
-      //   console.log('Actualizacion de la etapa:', resActualizacionProgreso)
-      //   console.log(
-      //     'Actualizacion de la asignacion:',
-      //     resActualizacionAsignacion
-      //   )
-      // }
-
-      const actualizaciones = Etapas.map(async (etapa) => {
-        const resActualizacionAsignacion =
-          await etapas.actualizarEstadoAsignacion({
-            DesarrolloProductoId: DesarrolloProductoId,
-            EtapaId: etapa.EtapaId,
-            Estado: etapa.DescripcionEstado
-          })
-
-        const resActualizacionProgreso = await etapas.actualizarProgresoEtapa({
-          Estado: etapa.ProgresoEstado,
-          ProgresoEtapaId: etapa.ProgresoEtapaId,
-          EstadoDescripcion: etapa.EstadoDescripcion,
-          Correlativo: 1
+      const reasignaciones = Etapas.map(async (etapa) => {
+        //ACTUALIZAR EL CORRELATIVO DE LAS ETAPAS ASIGNADAS
+        console.log('EtapasAsignadasId -->', etapa?.EtapasAsignadasId)
+        const resActualizacionAsignacion = await etapas.actualizarCorrelativo({
+          EtapasAsignadasId: etapa?.EtapasAsignadasId,
+          Correlativo: Correlativo
         })
 
-        // console.log('Actualizacion de la etapa:', resActualizacionProgreso)
-        console.log(
-          'Actualizacion de la asignacion:',
-          resActualizacionAsignacion,
-          resActualizacionProgreso
-        )
+        //INSERTAR NUEVAS ETAPAS EN ETAPAS ASIGNADAS CON ESTADO NULL Y CORRELATIVO NULL
+        const asignacionesNuevas = await producto.asingarEtapa({
+          desarrolloProducto: DesarrolloProductoId,
+          EtapaId: etapa?.EtapaId
+        })
 
         return {
           mensaje: 'Actualizacion de etapas aprobadas...',
-          productoActualizado: resActualizacionAsignacion
-          // response: resActualizacionProgreso
+          productoActualizado: resActualizacionAsignacion,
+          etapasAsignadasNuevas: asignacionesNuevas
         }
       })
 
+      console.log(EtapasEnProcesoActual)
+
+      const actualizarProgresoEtapa = EtapasEnProcesoActual.map(
+        async (etapa) => {
+          //ACTUALIZAR EL CORRELATIVO DEL PROGRESO DE LAS ETAPAS
+          const actualizarCorrelativo = await etapas.actualizarProgresoEtapa({
+            ProgresoEtapaId: etapa?.ProgresoEtapaId,
+            Correlativo: Correlativo
+          })
+
+          return {
+            mensaje: 'Actualizacion de etapas aprobadas...',
+            etapasProgreso: actualizarCorrelativo
+          }
+        }
+      )
+
+      //ACTUALIZAR EL ESTADO DEL PRODUCTO A 3 - INICIADO
       const actualizarProducto = await producto.update({
-        DesarrolloProductoId,
+        DesarrolloProductoId: DesarrolloProductoId,
         updates: {
           estado: 3
         }
       })
 
-      const response = await Promise.all(actualizaciones)
+      const response = await Promise.all(reasignaciones)
+      const actualizacionRes = await Promise.all(actualizarProgresoEtapa)
       console.log('Actualizaciones:', response, actualizarProducto)
 
       res.status(200).json({
         mensaje: 'Actualizacion de etapas aprobadas...',
         productoActualizado: actualizarProducto,
+        actualizaciones: actualizacionRes,
         response: response
       })
     } catch (err) {

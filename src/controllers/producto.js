@@ -84,8 +84,8 @@ export class Producto {
       return
     }
     try {
-      const etapasProducto = await etapas.etapasPorProducto({
-        DesarrolloProductoId: productoId
+      const etapasProducto = await etapas.getEtapasAsignadas({
+        ProductoId: productoId
       })
 
       const etapasConUsuarios = etapasProducto.map(async (etapa) => {
@@ -116,9 +116,14 @@ export class Producto {
 
       // Espera a que todas las consultas se completen antes de enviar la informacion al usuario
       const response = await Promise.all(etapasConUsuarios)
+      const etapasAnteriores = await etapas.getEtapasIniciadasAnteriores({
+        ProductoId: productoId
+      })
+
       res.status(200).json({
         mensaje: `Traendo las etapas del producto ${productoId}...`,
-        productoEtapas: response
+        productoEtapas: response,
+        etapasAnteriores: etapasAnteriores
       })
     } catch (err) {
       console.error('Error al traer las etapas del producto:', err)

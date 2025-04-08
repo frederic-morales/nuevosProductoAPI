@@ -16,7 +16,10 @@ export const etapa_router = () => {
     etapa.getProgresoHistorial
   )
   router.get('/etapa/historial/:rutaFile', etapa.getFileProgreso)
-
+  router.get(
+    '/etapasEnProcesoActual/:ProductoId',
+    etapa.getEpatasEnProcesoActual
+  )
   //POST
   router.post('/etapa/asignarUsuarios', etapa.asignarUsuarios)
   router.post('/etapa/iniciar', etapa.iniciarEtapa)
@@ -25,7 +28,7 @@ export const etapa_router = () => {
     uploadFile.single('Archivo'),
     etapa.agregarActualizacion
   )
-  router.post('/etapa/actualizarEstadoEtapas', etapa.actualizarEstadoEtapas)
+  router.post('/etapa/reasignarEtapas', etapa.reasignarEtapas)
   //DELETE
   router.delete('/etapa/historial', etapa.deleteHistorialEtapa)
   return router
