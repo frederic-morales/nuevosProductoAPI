@@ -38,7 +38,7 @@ export class Etapas_sql {
             JOIN IND_ETAPAS_ASIGNADAS A ON E.EtapaId = A.EtapaId
             JOIN IND_DESARROLLO_PRODUCTOS DP ON DP.DesarrolloProductoId = A.DesarrolloProducto 
             LEFT JOIN IND_PROGRESO_ETAPAS P ON A.EtapaId = P.Etapa AND P.DesarrolloProducto = A.DesarrolloProducto
-          WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.EtapaId = @EtapaId
+          WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.EtapaId = @EtapaId AND A.Correlativo IS NULL
           `)
       // console.log(resultado.recordset)
       return resultado.recordset[0]
@@ -48,6 +48,7 @@ export class Etapas_sql {
   }
 
   //NUEVA
+  //OBTIENE EL PROGRESO SELECCIONADO POR EL ID DE LA ETAPA ASIGNADA
   async getProgresoSeleccionado({
     DesarrolloProductoId,
     EtapaId,
@@ -70,10 +71,10 @@ export class Etapas_sql {
             JOIN IND_ETAPAS E ON E.EtapaId = P.Etapa
             JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = P.Etapa AND A.DesarrolloProducto = P.DesarrolloProducto
             JOIN IND_DESARROLLO_PRODUCTOS DP ON DP.DesarrolloProductoId = P.DesarrolloProducto  
-          WHERE P.DesarrolloProducto = @DesarrolloProductoId AND P.Etapa = @EtapaId AND A.EtapasAsignadasId = @EtapasAsignadasId AND A.Correlativo = P.Correlativo 
+          WHERE P.DesarrolloProducto = @DesarrolloProductoId AND P.Etapa = @EtapaId AND A.EtapasAsignadasId = @EtapasAsignadasId AND P.Correlativo IS NULL
         `)
 
-      return resultado.recordset[0]
+      return await resultado.recordset[0]
     } catch (err) {
       console.error('Error al traer las Etapas 2!!:', err)
     }

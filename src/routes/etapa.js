@@ -15,6 +15,13 @@ export const etapa_router = () => {
     '/etapas/:ProductoId/historial/:EtapaId',
     etapa.getProgresoHistorial
   )
+
+  //NUEVO
+  router.get(
+    '/etapas/progresoActual/:desarrolloProductoId/:etapaId/asignacion/:Id',
+    etapa.getProgresoActual
+  )
+
   router.get('/etapa/historial/:rutaFile', etapa.getFileProgreso)
   router.get(
     '/etapasEnProcesoActual/:ProductoId',

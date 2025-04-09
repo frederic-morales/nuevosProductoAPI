@@ -88,7 +88,6 @@ export class Etapa {
   getProgresoInfo = async (req, res) => {
     const desarrolloProductoId = req.params.desarrolloProductoId
     const etapaId = req.params.etapaId
-    // const etapasAsignadasId = req.params.etapasAsignadasId
 
     if (!etapaId || !desarrolloProductoId) {
       res
@@ -98,6 +97,7 @@ export class Etapa {
     }
 
     try {
+      //INFORMACION GENERAL DE LA ETAPA
       const etapaResponse = await etapas.getProgresoInfo({
         desarrolloProductoId,
         etapaId
@@ -115,6 +115,38 @@ export class Etapa {
 
       res.status(200).json({ infoEtapa })
       // console.log(infoEtapa)
+    } catch (err) {
+      console.error('❌ Error al obtener la informacion de la etapa:', err)
+      res.status(500).json({ error: 'Error en la obtención de la etapa' })
+    }
+  }
+
+  //OBTIENE EL PROGRESO SELECCIONADO POR EL ID DE LA ETAPA ASIGNADA
+  getProgresoActual = async (req, res) => {
+    const desarrolloProductoId = req.params.desarrolloProductoId
+    const etapaId = req.params.etapaId
+    const etapasAsignadasId = req.params.Id
+
+    console.log(desarrolloProductoId, etapaId, etapasAsignadasId)
+
+    if (!etapaId || !desarrolloProductoId || !etapasAsignadasId) {
+      res.status(400).json({
+        message:
+          'EtapaId, desarrolloProductoId y EtapaAsignadaId es obligatorio'
+      })
+      return
+    }
+
+    try {
+      const progresoEtapa = await etapas.getProgresoSeleccionado({
+        DesarrolloProductoId: desarrolloProductoId,
+        EtapaId: etapaId,
+        EtapasAsignadasId: etapasAsignadasId
+      })
+
+      console.log(progresoEtapa)
+
+      res.status(200).json(progresoEtapa)
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)
       res.status(500).json({ error: 'Error en la obtención de la etapa' })
