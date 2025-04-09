@@ -32,8 +32,8 @@ export class Etapas_sql {
       const resultado = await request.query(`
           SELECT DP.DesarrolloProductoId, DP.Nombre AS NombreProducto, DP.Rechazos, 
             E.EtapaId, E.Nombre AS NombreEtapa, E.Descripcion, E.FechaCreacion, E.TiempoEstimado, 
-            A.EtapasAsignadasId, A.Estado AS AsignacionEstado,
-            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.DescripcionEstado, P.Correlativo
+            A.EtapasAsignadasId, A.Estado AS AsignacionEstado, A.Correlativo AS AsigCorrelativo,
+            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.DescripcionEstado,  P.Correlativo as ProgCorrelativo
           FROM IND_ETAPAS E
             JOIN IND_ETAPAS_ASIGNADAS A ON E.EtapaId = A.EtapaId
             JOIN IND_DESARROLLO_PRODUCTOS DP ON DP.DesarrolloProductoId = A.DesarrolloProducto 
@@ -47,28 +47,60 @@ export class Etapas_sql {
     }
   }
 
-  //TRAE TODAS LAS ETAPAS DEL PRODUCTO SELECCIONADO
-  async etapasPorProducto({ DesarrolloProductoId }) {
+  //NUEVA
+  async getProgresoSeleccionado({
+    DesarrolloProductoId,
+    EtapaId,
+    EtapasAsignadasId
+  }) {
     try {
       const pool = await poolPromise
-      const request = pool.request()
-      request.input('DesarrolloProducto', sql.Int, DesarrolloProductoId)
-      const resultado =
-        await request.query(`SELECT A.DesarrolloProducto AS ProductoId, A.Estado AS AsignacionEstado, A.EtapasAsignadasId,
-            E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
-            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.Correlativo
-            FROM IND_ETAPAS E
-            JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
-            LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId AND P.DesarrolloProducto = A.DesarrolloProducto
-          WHERE A.DesarrolloProducto = @DesarrolloProducto
-          ORDER BY EtapaId`)
-      console.log('Traendo todas las etapas del producto', DesarrolloProductoId)
-      console.log('-------------------------')
-      return resultado.recordset
+      const request = pool
+        .request()
+        .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
+        .input('EtapaId', sql.Int, EtapaId)
+        .input('EtapasAsignadasId', sql.Int, EtapasAsignadasId)
+
+      const resultado = await request.query(`
+          SELECT DP.DesarrolloProductoId, DP.Nombre AS NombreProducto, DP.Rechazos, 
+          E.EtapaId, E.Nombre AS NombreEtapa, E.Descripcion, E.FechaCreacion, E.TiempoEstimado, 
+            A.EtapasAsignadasId, A.Estado AS AsignacionEstado, A.Correlativo AS AsigCorrelativo,
+            P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.DescripcionEstado,  P.Correlativo as ProgCorrelativo 
+          FROM IND_PROGRESO_ETAPAS P
+            JOIN IND_ETAPAS E ON E.EtapaId = P.Etapa
+            JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = P.Etapa AND A.DesarrolloProducto = P.DesarrolloProducto
+            JOIN IND_DESARROLLO_PRODUCTOS DP ON DP.DesarrolloProductoId = P.DesarrolloProducto  
+          WHERE P.DesarrolloProducto = @DesarrolloProductoId AND P.Etapa = @EtapaId AND A.EtapasAsignadasId = @EtapasAsignadasId AND A.Correlativo = P.Correlativo 
+        `)
+
+      return resultado.recordset[0]
     } catch (err) {
-      console.error('Error al traer las Etapas!!:', err)
+      console.error('Error al traer las Etapas 2!!:', err)
     }
   }
+
+  // //TRAE TODAS LAS ETAPAS DEL PRODUCTO SELECCIONADO
+  // async etapasPorProducto({ DesarrolloProductoId }) {
+  //   try {
+  //     const pool = await poolPromise
+  //     const request = pool.request()
+  //     request.input('DesarrolloProducto', sql.Int, DesarrolloProductoId)
+  //     const resultado =
+  //       await request.query(`SELECT A.DesarrolloProducto AS ProductoId, A.Estado AS AsignacionEstado, A.EtapasAsignadasId,
+  //           E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
+  //           P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.Correlativo
+  //           FROM IND_ETAPAS E
+  //           JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
+  //           LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId AND P.DesarrolloProducto = A.DesarrolloProducto
+  //         WHERE A.DesarrolloProducto = @DesarrolloProducto
+  //         ORDER BY EtapaId`)
+  //     console.log('Traendo todas las etapas del producto', DesarrolloProductoId)
+  //     console.log('-------------------------')
+  //     return resultado.recordset
+  //   } catch (err) {
+  //     console.error('Error al traer las Etapas!!:', err)
+  //   }
+  // }
 
   ///NUEVA
   //TRAE TODAS LAS ETAPAS ASIGNADAS  DEL PRODUCTO SELECCIONADO --
@@ -439,7 +471,7 @@ export class Etapas_sql {
     FechaFinal = new Date(),
     ProgresoEtapaId,
     EstadoDescripcion,
-    Correlativo = null
+    Correlativo
   }) {
     try {
       const pool = await poolPromise

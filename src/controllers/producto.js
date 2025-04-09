@@ -55,7 +55,6 @@ export class Producto {
   //TRAER LA INFO
   getInfo = async (req, res) => {
     const productoId = req.params.productoId
-
     console.log('Producto ID:')
     console.log(productoId)
 

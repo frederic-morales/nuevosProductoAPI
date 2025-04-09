@@ -88,6 +88,7 @@ export class Etapa {
   getProgresoInfo = async (req, res) => {
     const desarrolloProductoId = req.params.desarrolloProductoId
     const etapaId = req.params.etapaId
+    // const etapasAsignadasId = req.params.etapasAsignadasId
 
     if (!etapaId || !desarrolloProductoId) {
       res
@@ -329,9 +330,7 @@ export class Etapa {
         console.log(productoActualizacion)
       }
 
-      // console.log('Estadooooo:', Estado)
-      // si estado es 2 = rechazo, 1 = Aprobacion, si es 3 = etapa en progreso
-      console.log('Estadooooo', Estado, EstadoDescripcion)
+      console.log(Estado)
 
       if (Estado != 3) {
         const actualizacionProgreso = await etapas.actualizarProgresoEtapa({
@@ -365,7 +364,7 @@ export class Etapa {
     }
   }
 
-  //reasignas las etapas seleccionadas
+  //REASIGNAR ETAPAS SELECCIONADAS CAMBIANDO EL CORRELATIVO EN LOS ACTUALES
   reasignarEtapas = async (req, res) => {
     try {
       const {
@@ -375,13 +374,13 @@ export class Etapa {
         EtapasEnProcesoActual
       } = req.body
 
-      console.log('INFOOO')
       console.log(
         DesarrolloProductoId,
         Etapas,
         Correlativo,
         EtapasEnProcesoActual
       )
+
       if (!DesarrolloProductoId || !Etapas || !EtapasEnProcesoActual) {
         res.status(400).json({
           mensaje: 'DesarrolloProductoId y Etapas son obligatorios'
@@ -410,16 +409,16 @@ export class Etapa {
         }
       })
 
-      console.log(EtapasEnProcesoActual)
-
+      // console.log(EtapasEnProcesoActual)
       const actualizarProgresoEtapa = EtapasEnProcesoActual.map(
         async (etapa) => {
           //ACTUALIZAR EL CORRELATIVO DEL PROGRESO DE LAS ETAPAS
           const actualizarCorrelativo = await etapas.actualizarProgresoEtapa({
             ProgresoEtapaId: etapa?.ProgresoEtapaId,
-            Correlativo: Correlativo
+            Correlativo: Correlativo,
+            Estado: etapa?.Estado,
+            EstadoDescripcion: etapa?.DescripcionEstado
           })
-
           return {
             mensaje: 'Actualizacion de etapas aprobadas...',
             etapasProgreso: actualizarCorrelativo
