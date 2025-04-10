@@ -81,4 +81,31 @@ export class Usuarios {
       console.error('Error al traer usuario', Usuario, err)
     }
   }
+
+  //TRAE LAS ETAPAS ASIGNADAS AL USUARIO
+  async getUsuarioEtapas({ Usuario }) {
+    try {
+      const pool = await poolPromise
+      const request = await pool
+        .request()
+        .input('Usuario', sql.VarChar(20), Usuario)
+      const result = await request.query(`
+          SELECT DP.DesarrolloProductoId, DP.Serie, DP.Rechazos, --DP.Usuario, 
+              A.EtapasAsignadasId, A.DesarrolloProducto, A.EtapaId, A.Estado, A.Correlativo,
+              E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
+              GU.Usuario
+          FROM IND_ETAPAS_ASIGNADAS A
+            JOIN IND_ETAPAS E ON E.EtapaId = A.EtapaId
+            JOIN IND_GRUPOS_USUARIOS_ETAPAS GU ON GU.EtapaId = E.EtapaId
+            JOIN IND_DESARROLLO_PRODUCTOS DP ON DP.DesarrolloProductoId = A.DesarrolloProducto
+          WHERE GU.Usuario = 'FSOC' AND A.Correlativo IS NULL
+          ORDER BY DP.DesarrolloProductoId, A.EtapaId
+        `)
+
+      console.log('Traendo las etapas del usuario...', Usuario)
+      return await result.recordset
+    } catch (err) {
+      console.error('Error al traer las etapas del usuario', Usuario, err)
+    }
+  }
 }

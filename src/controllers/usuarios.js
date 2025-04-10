@@ -1,9 +1,11 @@
 import { Usuarios } from '../sql/usuarios.js'
+import { Etapas_sql } from '../sql/etapas.js'
 const usuarios = new Usuarios()
+const etapas = new Etapas_sql()
 
 export class Usuarios_con {
   //-------------------------
-  //  GETS
+  //GETS
   //-------------------------
 
   //TRAE TODOS LOS USUARIOS
@@ -38,10 +40,39 @@ export class Usuarios_con {
     }
   }
 
+  getEtapasAsignadas = async (req, res) => {
+    const Usuario = req.params.user
+    if (!Usuario) {
+      res.status(400).json({ message: 'El usuario es obligatorio' })
+    }
+    try {
+      const usuarioEtapas = await usuarios.getUsuarioEtapas({ Usuario })
+      const etapasCompletas = usuarioEtapas.map(async (etapa) => {
+        const EtapaId = etapa?.EtapaId
+        const ProductoId = etapa?.DesarrolloProductoId
+
+        const permitirInicio = await etapas.verificarDependencias({
+          DesarrolloProductoId: ProductoId,
+          EtapaId: EtapaId
+        })
+
+        return {
+          ...etapa,
+          PermitirInicio: permitirInicio === 1 ? true : false // SI EL SP RETORNA 1 ES PORQUE LA ETAPA SE PUEDE INICIAR
+        }
+      })
+      const response = await Promise.all(etapasCompletas)
+      res.status(200).json(response)
+      // res.status(200).json(etapas)
+    } catch (err) {
+      console.error('❌ Error al traer el grupo de usuarios:', err)
+      res.status(500).json({ error: 'Error al traer los usuarios del grupo' })
+    }
+  }
+
   //-------------------------
   //  POST
   //-------------------------
-
   //VERIFICACION DE USUARIO LOGIN
   verificacionUsuario = async (req, res) => {
     const { Usuario, Password } = req.body

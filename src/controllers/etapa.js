@@ -230,23 +230,29 @@ export class Etapa {
       )
 
       const resultados = []
+      console.log(usuariosParaAgregar)
+      console.log(usuariosParaEliminar)
 
-      for (const usuario of usuariosParaAgregar) {
-        // Asigna los usuarios a la etapa
-        const resultado = await etapas.asingarUsuario({
-          EtapaId,
-          Usuario: usuario.Usuario
-        })
-        resultados.push(resultado)
+      if (usuariosParaAgregar.length > 0) {
+        for (const usuario of usuariosParaAgregar) {
+          // Asigna los usuarios a la etapac
+          const resultado = await etapas.asingarUsuario({
+            EtapaId,
+            Usuario: usuario.Usuario
+          })
+          resultados.push(resultado)
+        }
       }
 
-      for (const usuario of usuariosParaEliminar) {
-        // Elimina los usuarios de la etapa
-        const resultado = await etapas.deleteUsuarioDeEtapa({
-          EtapaId,
-          Usuario: usuario.Usuario
-        })
-        resultados.push(resultado)
+      if (usuariosParaEliminar.length > 0) {
+        for (const usuario of usuariosParaEliminar) {
+          // Elimina los usuarios de la etapa
+          const resultado = await etapas.deleteUsuarioDeEtapa({
+            EtapaId,
+            Usuario: usuario.Usuario
+          })
+          resultados.push(resultado)
+        }
       }
 
       res.status(200).json({
