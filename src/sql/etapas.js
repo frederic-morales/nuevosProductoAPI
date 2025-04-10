@@ -80,31 +80,8 @@ export class Etapas_sql {
     }
   }
 
-  // //TRAE TODAS LAS ETAPAS DEL PRODUCTO SELECCIONADO
-  // async etapasPorProducto({ DesarrolloProductoId }) {
-  //   try {
-  //     const pool = await poolPromise
-  //     const request = pool.request()
-  //     request.input('DesarrolloProducto', sql.Int, DesarrolloProductoId)
-  //     const resultado =
-  //       await request.query(`SELECT A.DesarrolloProducto AS ProductoId, A.Estado AS AsignacionEstado, A.EtapasAsignadasId,
-  //           E.EtapaId, E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
-  //           P.ProgresoEtapaId, P.Usuario, P.FechaInicio, P.FechaFinal, P.Estado AS ProgresoEstado, P.Correlativo
-  //           FROM IND_ETAPAS E
-  //           JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
-  //           LEFT JOIN IND_PROGRESO_ETAPAS P ON P.Etapa = A.EtapaId AND P.DesarrolloProducto = A.DesarrolloProducto
-  //         WHERE A.DesarrolloProducto = @DesarrolloProducto
-  //         ORDER BY EtapaId`)
-  //     console.log('Traendo todas las etapas del producto', DesarrolloProductoId)
-  //     console.log('-------------------------')
-  //     return resultado.recordset
-  //   } catch (err) {
-  //     console.error('Error al traer las Etapas!!:', err)
-  //   }
-  // }
-
   ///NUEVA
-  //TRAE TODAS LAS ETAPAS ASIGNADAS  DEL PRODUCTO SELECCIONADO --
+  //TRAE TODAS LAS ETAPAS ASIGNADAS  DEL PRODUCTO SELECCIONADO Y CORRELATIVO ES NULL--
   async getEtapasAsignadas({ ProductoId }) {
     try {
       const pool = await poolPromise
@@ -124,6 +101,28 @@ export class Etapas_sql {
       console.error('Error al traer las Etapas Asignadas!!:', err)
     }
   }
+
+  //NUEVA -
+  //TRAE EL PROGRESO DE LA ETAPA SI EXISTE Y CORRELATIVO ES NULL
+  async getProgresoEtapa({ productoId, EtapaId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool.request()
+      request.input('DesarrolloProducto', sql.Int, productoId)
+      request.input('EtapaId', sql.Int, EtapaId)
+      const resultado = await request.query(`
+                SELECT * FROM IND_PROGRESO_ETAPAS 
+                WHERE DesarrolloProducto = @DesarrolloProducto 
+                AND Etapa = @EtapaId
+                AND Correlativo IS NULL `)
+      console.log('Trae la etapa en progreso', productoId)
+      console.log('-------------------------')
+      return resultado.recordset
+    } catch (err) {
+      console.error('Error al traer el progreso de la etapa!!:', err)
+    }
+  }
+
   ///NUEVA
   //TRAE TODAS LAS ETAPAS INICIADAS DEL PRODUCTO
   async getEtapasIniciadasAnteriores({ ProductoId }) {
@@ -213,20 +212,25 @@ export class Etapas_sql {
   }
 
   // TRAE EL HISTORIAL DE LA ETAPA EN PROGRESO
-  async getProgresoHistorial({ DesarrolloProductoId, EtapaId }) {
+  async getProgresoHistorial({
+    DesarrolloProductoId,
+    EtapaId,
+    ProgresoEtapaId
+  }) {
     try {
       const pool = await poolPromise
       const request = pool
         .request()
         .input('DesarrolloProducto', sql.Int, DesarrolloProductoId)
         .input('EtapaId', sql.Int, EtapaId)
+        .input('ProgresoEtapaId', sql.Int, ProgresoEtapaId)
 
       const resultado = await request.query(`
           SELECT H.ProEtapaHistorialId, P.ProgresoEtapaId, P.DesarrolloProducto AS Producto, P.Etapa, P.FechaInicio, P.Estado AS ProgresoEstado,
 	          H.ProEtapaHistorialId AS HistorialId, H.Estado AS ActualizacionEstado, H.RutaDoc, H.Descripcion, H.FechaActualizacion
           FROM IND_PROGRESO_ETAPAS P
             JOIN IND_PROGRESO_ETAPAS_HISTORIAL H ON H.ProgresoEtapa = P.ProgresoEtapaId
-          WHERE P.DesarrolloProducto = @DesarrolloProducto AND P.Etapa = @EtapaId
+          WHERE P.DesarrolloProducto = @DesarrolloProducto AND P.Etapa = @EtapaId AND ProgresoEtapaId = @ProgresoEtapaId
         `)
       console.log('Traendo el Historial de la etapa ', EtapaId)
       console.log('-------------------------')

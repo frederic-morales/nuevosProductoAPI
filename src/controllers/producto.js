@@ -98,6 +98,12 @@ export class Producto {
           EtapaId
         })
 
+        // TRAE EL PROGRESO DE LA ETAPA
+        const progresoEtapa = await etapas.getProgresoEtapa({
+          productoId,
+          EtapaId
+        })
+
         // VERIFICA QUE ETAPA SE PUEDE INICIAR
         const permitirInicio = await etapas.verificarDependencias({
           DesarrolloProductoId: productoId,
@@ -108,6 +114,7 @@ export class Producto {
           ...etapa,
           usuariosAsignados: usuarios,
           procesosResponsables: procesosResponsables,
+          progresoEtapa: progresoEtapa,
           PermitirInicio: permitirInicio === 1 ? true : false // SI EL SP RETORNA 1 ES PORQUE LA ETAPA SE PUEDE INICIAR
         }
         //

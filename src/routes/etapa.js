@@ -12,7 +12,7 @@ export const etapa_router = () => {
   router.get('/etapa/:etapaId/usuarios', etapa.getUsuariosAsignados)
   router.get('/etapas/:desarrolloProductoId/:etapaId', etapa.getProgresoInfo)
   router.get(
-    '/etapas/:ProductoId/historial/:EtapaId',
+    '/etapas/:ProductoId/historial/:EtapaId/progreso/:Id',
     etapa.getProgresoHistorial
   )
 
