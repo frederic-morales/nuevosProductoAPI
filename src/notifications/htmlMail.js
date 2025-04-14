@@ -89,9 +89,9 @@ const mailHtml = (etapaInfo) => {
   </head>
   <body>
     <div class="container">
-      <div class="header">🔔 Notificación para el producto ${
-        etapaInfo?.NombreProducto
-      }</div>
+      <div class="header">🔔 Notificación para el producto 
+      ${etapaInfo?.NombreProducto}
+      </div>
       <div class="content">
         <p>Se acaba de realizar la siguiente accion: <b></b></p>
           ${
@@ -125,4 +125,5 @@ const mailHtml = (etapaInfo) => {
 </html>
     `
 }
+
 export default mailHtml

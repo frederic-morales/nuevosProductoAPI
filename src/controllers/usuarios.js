@@ -40,30 +40,56 @@ export class Usuarios_con {
     }
   }
 
+  //TRAE LAS ETAPAS ASIGNADAS AL USUARIO SEPARADAS POR PRODUCTO
   getEtapasAsignadas = async (req, res) => {
     const Usuario = req.params.user
-    if (!Usuario) {
+    const Serie = req.params.serie
+    if (!Usuario || !Serie) {
       res.status(400).json({ message: 'El usuario es obligatorio' })
     }
     try {
-      const usuarioEtapas = await usuarios.getUsuarioEtapas({ Usuario })
-      const etapasCompletas = usuarioEtapas.map(async (etapa) => {
-        const EtapaId = etapa?.EtapaId
-        const ProductoId = etapa?.DesarrolloProductoId
+      console.log(Serie)
 
-        const permitirInicio = await etapas.verificarDependencias({
-          DesarrolloProductoId: ProductoId,
-          EtapaId: EtapaId
+      const productosUsuario = await usuarios.getProductosPorUsuario({
+        Usuario,
+        Serie
+      })
+
+      const productoConEtapas = productosUsuario.map(async (producto) => {
+        const DesarrolloProductoId = producto?.DesarrolloProductoId
+
+        const etapasUsuario = await usuarios.getUsuarioEtapas({
+          Usuario,
+          DesarrolloProductoId
         })
 
+        const etapasConPermiso = etapasUsuario.map(async (etapa) => {
+          const EtapaId = etapa?.EtapaId
+          const ProductoId = etapa?.ProductoId
+
+          const permitirInicio = await etapas.verificarDependencias({
+            DesarrolloProductoId: ProductoId,
+            EtapaId: EtapaId
+          })
+
+          console.log(permitirInicio)
+
+          return {
+            ...etapa,
+            PermitirInicio: permitirInicio === 1 ? true : false // SI EL SP RETORNA 1 ES PORQUE LA ETAPA SE PUEDE INICIAR
+          }
+        })
+
+        const responseEtapas = await Promise.all(etapasConPermiso)
+
         return {
-          ...etapa,
-          PermitirInicio: permitirInicio === 1 ? true : false // SI EL SP RETORNA 1 ES PORQUE LA ETAPA SE PUEDE INICIAR
+          ...producto,
+          etapas: responseEtapas
         }
       })
-      const response = await Promise.all(etapasCompletas)
+
+      const response = await Promise.all(productoConEtapas)
       res.status(200).json(response)
-      // res.status(200).json(etapas)
     } catch (err) {
       console.error('❌ Error al traer el grupo de usuarios:', err)
       res.status(500).json({ error: 'Error al traer los usuarios del grupo' })

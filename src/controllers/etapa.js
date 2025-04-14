@@ -1,6 +1,9 @@
 import { Etapas_sql } from '../sql/etapas.js'
 import { NuevoProducto } from '../sql/producto.js'
-import sendNotificacion from '../notifications/sendEmail.js'
+import {
+  sendNotificacion,
+  notificacionSiguientesEtapas
+} from '../notifications/sendEmail.js'
 import fs from 'fs'
 
 const etapas = new Etapas_sql()
@@ -103,13 +106,18 @@ export class Etapa {
         etapaId
       })
 
+      //VERIFICA SI LA ETAPA SE PUEDE INICIAR
       const permitirInicio = await etapas.verificarDependencias({
         DesarrolloProductoId: desarrolloProductoId,
         EtapaId: etapaId
       })
 
+      //TRAE LOS USUARIOS QUE PUEDEN INICIAR LA ETAPA
+      const usuarios = await etapas.getUsuariosAsignados({ EtapaId: etapaId })
+
       const infoEtapa = {
         ...etapaResponse,
+        usuariosAsignados: usuarios,
         PermitirInicio: permitirInicio === 1 ? true : false
       }
 
@@ -338,6 +346,7 @@ export class Etapa {
 
     if (req.file) {
       console.log('Subiendo archivo...')
+      console.log(req.file)
     } else {
       console.log('No se subió ningún archivo.')
     }
@@ -367,10 +376,11 @@ export class Etapa {
           DesarrolloProductoId,
           updates
         })
+
         console.log(productoActualizacion)
       }
 
-      // console.log(Estado)
+      // console.log(Estado = 1 o 2)
       if (Estado != 3) {
         const actualizacionProgreso = await etapas.actualizarProgresoEtapa({
           Estado,
@@ -378,10 +388,21 @@ export class Etapa {
           EstadoDescripcion
         })
 
+        //Notificacion de Aprobacion y Rechazo
         const resEnviarNotificacion = await sendNotificacion({
           DesarrolloProductoId,
           EtapaId
         })
+
+        //Enviar notificacion de etapas siguientes si se aprobo la etapa
+        console.log('Estado...', Estado)
+        if (Estado == 1) {
+          await notificacionSiguientesEtapas({
+            DesarrolloProductoId,
+            EtapaId
+          })
+        }
+
         res.status(200).json({
           mensaje: 'Actualizacion agregada con exito',
           response: response,
@@ -389,6 +410,7 @@ export class Etapa {
           actualizacionAsignacion: actualizacionAsignacion,
           resEnviarNotificacion: resEnviarNotificacion
         })
+
         return
       }
 
@@ -459,23 +481,6 @@ export class Etapa {
         }
       })
 
-      // // console.log(EtapasEnProcesoActual)
-      // const actualizarProgresoEtapa = EtapasEnProcesoActual.map(
-      //   async (etapa) => {
-      //     //ACTUALIZAR EL CORRELATIVO DEL PROGRESO DE LAS ETAPAS
-      //     const actualizarCorrelativo = await etapas.actualizarProgresoEtapa({
-      //       ProgresoEtapaId: etapa?.ProgresoEtapaId,
-      //       Correlativo: Correlativo,
-      //       Estado: etapa?.Estado,
-      //       EstadoDescripcion: etapa?.DescripcionEstado
-      //     })
-      //     return {
-      //       mensaje: 'Actualizacion de etapas aprobadas...',
-      //       etapasProgreso: actualizarCorrelativo
-      //     }
-      //   }
-      // )
-
       //ACTUALIZAR EL ESTADO DEL PRODUCTO A 3 - INICIADO
       const actualizarProducto = await producto.update({
         DesarrolloProductoId: DesarrolloProductoId,
@@ -488,10 +493,12 @@ export class Etapa {
       // const actualizacionRes = await Promise.all(actualizarProgresoEtapa)
       console.log('Actualizaciones:', response, actualizarProducto)
 
+      // ENVIAR NOTIFICACIONES AL REASIGNAR ETAPAS
+      await notificacionSiguientesEtapas({ DesarrolloProductoId, EtapaId: 1 })
+
       res.status(200).json({
         mensaje: 'Actualizacion de etapas aprobadas...',
         productoActualizado: actualizarProducto,
-        // actualizaciones: actualizacionRes,
         response: response
       })
     } catch (err) {

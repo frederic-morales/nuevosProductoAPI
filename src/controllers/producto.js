@@ -3,6 +3,7 @@
 //--------------------------------------------------------
 import { Etapas_sql } from '../sql/etapas.js'
 import { NuevoProducto } from '../sql/producto.js'
+import { notificacionSiguientesEtapas } from '../notifications/sendEmail.js'
 const nuevoProducto = new NuevoProducto()
 const etapas = new Etapas_sql()
 
@@ -154,6 +155,7 @@ export class Producto {
         serie
       })
       console.log(nuevoProductoId)
+
       res.status(200).json({ nuevoProductoId: nuevoProductoId })
     } else {
       res.status(400).json({ error: 'Nombre y Descripcion son obligatorios' })
@@ -182,6 +184,13 @@ export class Producto {
         })
         resultados.push(res)
       }
+
+      // NOTIFICACION PARA INICIAR LA ETAPA 1
+      await notificacionSiguientesEtapas({
+        DesarrolloProductoId: desarrolloProducto,
+        EtapaId: 1
+      })
+
       res.status(201).json({
         mensaje: 'Todas las etapas fueron asignadas correctamente',
         resultados
@@ -195,7 +204,6 @@ export class Producto {
   //-------------------------
   //  PATCH
   //-------------------------
-
   //UPDATE PRODUCTO
   update = async (req, res) => {
     const { desarrolloProductoId, updates } = req.body

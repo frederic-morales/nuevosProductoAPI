@@ -38,7 +38,7 @@ export class Etapas_sql {
             JOIN IND_ETAPAS_ASIGNADAS A ON E.EtapaId = A.EtapaId
             JOIN IND_DESARROLLO_PRODUCTOS DP ON DP.DesarrolloProductoId = A.DesarrolloProducto 
             LEFT JOIN IND_PROGRESO_ETAPAS P ON A.EtapaId = P.Etapa AND P.DesarrolloProducto = A.DesarrolloProducto
-          WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.EtapaId = @EtapaId AND A.Correlativo IS NULL
+          WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.EtapaId = @EtapaId AND A.Correlativo IS NULL 
           `)
       // console.log(resultado.recordset)
       return resultado.recordset[0]
@@ -80,8 +80,7 @@ export class Etapas_sql {
     }
   }
 
-  ///NUEVA
-  //TRAE TODAS LAS ETAPAS ASIGNADAS  DEL PRODUCTO SELECCIONADO Y CORRELATIVO ES NULL--
+  //TRAE TODAS LAS ETAPAS ASIGNADAS DEL PRODUCTO SELECCIONADO Y CORRELATIVO ES NULL--
   async getEtapasAsignadas({ ProductoId }) {
     try {
       const pool = await poolPromise
@@ -102,7 +101,6 @@ export class Etapas_sql {
     }
   }
 
-  //NUEVA -
   //TRAE EL PROGRESO DE LA ETAPA SI EXISTE Y CORRELATIVO ES NULL
   async getProgresoEtapa({ productoId, EtapaId }) {
     try {
@@ -261,33 +259,6 @@ export class Etapas_sql {
       return resultado.recordset
     } catch (err) {
       console.error('Error al obtener el Historial de la etapa!!:', err)
-    }
-  }
-
-  //TRAE LA INFORMACION DE LA ETAPA Y EL USUARIO PARA ENVIAR LA NOTIFICAICION POR MAIL
-  async getEtapaUsuario({ DesarrolloProductoId, EtapaId }) {
-    try {
-      const pool = await poolPromise
-      const request = pool
-        .request()
-        .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
-        .input('EtapaId', sql.Int, EtapaId)
-      const resultado = await request.query(`
-          SELECT P.ProgresoEtapaId, P.Estado AS ProgresoEstado, P.FechaInicio,
-            D.DesarrolloProductoId, D.Nombre AS NombreProducto,  D.Serie,
-            E.Nombre AS NombreEtapa, E.EtapaId, E.TiempoEstimado, 
-            U.Nombres, U.Apellidos, U.CorreoEmpresa AS Correo
-          FROM IND_PROGRESO_ETAPAS P
-            JOIN IND_DESARROLLO_PRODUCTOS D ON P.DesarrolloProducto = D.DesarrolloProductoId
-            JOIN IND_ETAPAS E ON E.EtapaId = P.Etapa
-            JOIN GEN_USUARIOS U ON U.Usuario = P.Usuario
-            WHERE P.DesarrolloProducto = @DesarrolloProductoId AND E.EtapaId = @EtapaId`)
-
-      console.log('Traendo la informacion de la etapa con el usuario')
-      console.log('-------------------------')
-      return await resultado?.recordset[0]
-    } catch (err) {
-      console.error('Error al traer la etapa con el usuario!!:', err)
     }
   }
 
