@@ -23,7 +23,7 @@ lib-cov
 coverage
 *.lcov
 
-files
+archivos
 
 *.http
 

@@ -4,7 +4,11 @@ import {
   sendNotificacion,
   notificacionSiguientesEtapas
 } from '../notifications/sendEmail.js'
-import fs from 'fs'
+import fs from 'fs/promises'
+// import fsExists from 'fs.promises.exists'
+import { saveFile } from '../files/files.js'
+// import path from 'path'
+// import process from 'process'
 
 const etapas = new Etapas_sql()
 const producto = new NuevoProducto()
@@ -197,17 +201,20 @@ export class Etapa {
       res.status(400).json({ message: 'El parametro rutaFile es obligatorio' })
     }
 
-    if (!fs.existsSync(rutaFile)) {
-      res.status(404).json({ message: 'El archivo no existe' })
-      return
+    try {
+      // const rutaDoc = path.join(process.env.FILESPATH, rutaFile)
+      await fs.access(rutaFile)
+      //DESCARGANDO ARCHIVO EN EL CLIENTE
+      res.dowload(rutaFile, (err) => {
+        if (err) {
+          console.error('Error al descargar el archivo:', err)
+          res.status(500).json({ error: 'Error al descargar el archivo' })
+        }
+      })
+    } catch (err) {
+      console.error('❌ Error al enviar el archivo:', err)
+      res.status(500).json({ error: 'Error al enviar el archivo' })
     }
-
-    res.dowload(rutaFile, (err) => {
-      if (err) {
-        console.error('Error al descargar el archivo:', err)
-        res.status(500).json({ error: 'Error al descargar el archivo' })
-      }
-    })
   }
 
   //-------------------------
@@ -283,8 +290,9 @@ export class Etapa {
       })
       return
     }
+
     try {
-      //Crea un nuevo Registro
+      //CREA UN NUEVO REGISTRO
       const resInsert = await etapas.iniciarEtapa({
         EtapaId,
         Usuario,
@@ -293,18 +301,17 @@ export class Etapa {
         DescripcionEstado: 'Iniciado'
       })
 
-      // Actualiza el estado la etapa asignada
+      // ACTUALIZA EL ESTADO DE LA ETAPA ASIGNADA
       const resUpdate = await etapas.actualizarEstadoAsignacion({
         DesarrolloProductoId,
         EtapaId
       })
 
-      //Enviar Notificacion de Inicio de Etapa
+      // ENVIAR NOTIFICACION DE INICIO DE ETAPA
       const resEnviarNotificacion = await sendNotificacion({
         DesarrolloProductoId,
         EtapaId
       })
-
       // console.log(resEnviarNotificacion)
       // console.log(resUpdate)
       res.status(200).json({
@@ -319,6 +326,7 @@ export class Etapa {
     }
   }
 
+  //MANEJO DE ARCHIVOS
   //INSERTA UN REGISTRO EN IND_PROGRESO_ETAPAS_HISTORIAL
   agregarActualizacion = async (req, res) => {
     const {
@@ -344,19 +352,20 @@ export class Etapa {
       return
     }
 
-    if (req.file) {
-      console.log('Subiendo archivo...')
-      console.log(req.file)
-    } else {
-      console.log('No se subió ningún archivo.')
-    }
-
     try {
+      //GUARDA EL ARCHIVO SI EXISTE EN EL FORMULARIO
+      let rutaFile
+      if (req.file) {
+        const file = req.file
+        const body = req.body
+        rutaFile = await saveFile(file, body)
+      }
+
       const response = await etapas.agregarActualizacion({
         ProgresoEtapaId,
         Estado,
-        RutaDoc: req?.file?.path || null,
-        Descripcion
+        Descripcion,
+        RutaDoc: rutaFile || null
       })
 
       // TABLA DE ASIGNACION DE ETAPAS
@@ -421,27 +430,16 @@ export class Etapa {
         actualizacionAsignacion: actualizacionAsignacion
       })
     } catch (err) {
-      console.error('❌ Error al obtener la informacion de la etapa:', err)
-      res.status(500).json({ error: 'Error en la obtención de la etapa' })
+      console.error('❌ Error al insert una actualizacion:', err)
+      res.status(500).json({ error: 'Error en insertar una actualizacion' })
     }
   }
 
   //REASIGNAR ETAPAS SELECCIONADAS CAMBIANDO EL CORRELATIVO EN LOS ACTUALES
   reasignarEtapas = async (req, res) => {
     try {
-      const {
-        DesarrolloProductoId,
-        Etapas,
-        Correlativo
-        // EtapasEnProcesoActual
-      } = req.body
-
-      console.log(
-        DesarrolloProductoId,
-        Etapas,
-        Correlativo
-        // EtapasEnProcesoActual
-      )
+      const { DesarrolloProductoId, Etapas, Correlativo } = req.body
+      console.log(DesarrolloProductoId, Etapas, Correlativo)
 
       if (!DesarrolloProductoId || !Etapas) {
         res.status(400).json({

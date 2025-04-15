@@ -21,12 +21,13 @@ export const etapa_router = () => {
     '/etapas/progresoActual/:desarrolloProductoId/:etapaId/asignacion/:Id',
     etapa.getProgresoActual
   )
-
+  // TRAER ARCHIVOS
   router.get('/etapa/historial/:rutaFile', etapa.getFileProgreso)
   router.get(
     '/etapasEnProcesoActual/:ProductoId',
     etapa.getEpatasEnProcesoActual
   )
+
   //POST
   router.post('/etapa/asignarUsuarios', etapa.asignarUsuarios)
   router.post('/etapa/iniciar', etapa.iniciarEtapa)
