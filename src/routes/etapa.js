@@ -15,14 +15,16 @@ export const etapa_router = () => {
     '/etapas/:ProductoId/historial/:EtapaId/progreso/:Id',
     etapa.getProgresoHistorial
   )
-
-  //NUEVO
   router.get(
     '/etapas/progresoActual/:desarrolloProductoId/:etapaId/asignacion/:Id',
     etapa.getProgresoActual
   )
+
   // TRAER ARCHIVOS
-  router.get('/etapa/historial/:rutaFile', etapa.getFileProgreso)
+  router.get(
+    '/etapa/historial/:nombreProducto/:nombreEtapa/:archivo',
+    etapa.getFileProgreso
+  )
   router.get(
     '/etapasEnProcesoActual/:ProductoId',
     etapa.getEpatasEnProcesoActual
@@ -31,6 +33,8 @@ export const etapa_router = () => {
   //POST
   router.post('/etapa/asignarUsuarios', etapa.asignarUsuarios)
   router.post('/etapa/iniciar', etapa.iniciarEtapa)
+
+  //ACTUALIZACION DE ETAPA ARCHIVO OPCIONAL
   router.post(
     '/etapa/progreso/actualizacion',
     uploadFile.single('Archivo'),

@@ -1,5 +1,9 @@
 import { Usuarios } from '../sql/usuarios.js'
 import { Etapas_sql } from '../sql/etapas.js'
+import jwt from 'jsonwebtoken'
+import process from 'process'
+import { config } from 'dotenv'
+config()
 const usuarios = new Usuarios()
 const etapas = new Etapas_sql()
 
@@ -103,22 +107,31 @@ export class Usuarios_con {
   verificacionUsuario = async (req, res) => {
     const { Usuario, Password } = req.body
     console.log(Usuario, Password)
+
     if ((!Usuario, !Password)) {
       res.status(400).json({ message: 'Debe ingresar Usuario y Password' })
       return
     }
+
     try {
       const verificacion = await usuarios.verificacionUsuario({
         Usuario,
         Password
       })
+      let token = null
       const usuario = await usuarios.informacionUsuario({ Usuario })
+      const user = usuario[0]
       switch (verificacion) {
         case 0:
+          token = jwt.sign(user, process.env.JWT_SECRET, {
+            expiresIn: '1h'
+          })
+          console.log('Token generado:', token)
           res.status(200).json({
             message: `Usuario ${Usuario} verificado correctamente...`,
             verificacion: true,
-            user: usuario[0]
+            user: usuario[0],
+            token: token
           })
           break
         case 1:

@@ -4,6 +4,7 @@ import { etapa_router } from './routes/etapa.js'
 import { usuario_router } from './routes/usuarios.js'
 import process from 'node:process'
 import cors from 'cors'
+import { verifyToken } from './middlewares/verifyToken.js'
 
 const app = express()
 
@@ -11,6 +12,7 @@ app.disable('x-powered-by')
 app.use(express.json())
 app.use(cors())
 
+app.use(verifyToken)
 app.use('/', producto_router())
 app.use('/', etapa_router())
 app.use('/', usuario_router())

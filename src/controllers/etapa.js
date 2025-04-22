@@ -6,10 +6,9 @@ import {
 } from '../notifications/sendEmail.js'
 import fs from 'fs/promises'
 // import fsExists from 'fs.promises.exists'
-import { saveFile } from '../files/files.js'
+import { saveFile, deleteFile } from '../files/files.js'
 // import path from 'path'
-// import process from 'process'
-
+import process from 'process'
 const etapas = new Etapas_sql()
 const producto = new NuevoProducto()
 
@@ -56,6 +55,7 @@ export class Etapa {
         const procesosResponsables = await etapas.getProcesosResponsables({
           EtapaId
         })
+
         // console.log(procesosResponsables)
         return {
           ...etapa,
@@ -118,15 +118,14 @@ export class Etapa {
 
       //TRAE LOS USUARIOS QUE PUEDEN INICIAR LA ETAPA
       const usuarios = await etapas.getUsuariosAsignados({ EtapaId: etapaId })
-
       const infoEtapa = {
         ...etapaResponse,
         usuariosAsignados: usuarios,
         PermitirInicio: permitirInicio === 1 ? true : false
       }
 
-      res.status(200).json({ infoEtapa })
       // console.log(infoEtapa)
+      res.status(200).json({ infoEtapa })
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)
       res.status(500).json({ error: 'Error en la obtención de la etapa' })
@@ -138,7 +137,6 @@ export class Etapa {
     const desarrolloProductoId = req.params.desarrolloProductoId
     const etapaId = req.params.etapaId
     const etapasAsignadasId = req.params.Id
-
     console.log(desarrolloProductoId, etapaId, etapasAsignadasId)
 
     if (!etapaId || !desarrolloProductoId || !etapasAsignadasId) {
@@ -155,9 +153,7 @@ export class Etapa {
         EtapaId: etapaId,
         EtapasAsignadasId: etapasAsignadasId
       })
-
       console.log(progresoEtapa)
-
       res.status(200).json(progresoEtapa)
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)
@@ -196,16 +192,19 @@ export class Etapa {
 
   // TRAE EL ARCHIVO DE PROGRESO
   getFileProgreso = async (req, res) => {
-    const { rutaFile } = req.params
-    if (!rutaFile) {
+    const { nombreProducto, nombreEtapa, archivo } = req.params
+    if (!nombreProducto || !nombreEtapa || !archivo) {
       res.status(400).json({ message: 'El parametro rutaFile es obligatorio' })
     }
 
     try {
-      // const rutaDoc = path.join(process.env.FILESPATH, rutaFile)
+      //VERIFICA SI EL ARCHIVO EXISTE EN LA RUTA
+      const rutaFile = `${process.env.FILESPATH}\\${nombreProducto}\\${nombreEtapa}\\${archivo}`
+      console.log('rutaFile...', rutaFile)
       await fs.access(rutaFile)
+
       //DESCARGANDO ARCHIVO EN EL CLIENTE
-      res.dowload(rutaFile, (err) => {
+      res.download(rutaFile, (err) => {
         if (err) {
           console.error('Error al descargar el archivo:', err)
           res.status(500).json({ error: 'Error al descargar el archivo' })
@@ -419,7 +418,6 @@ export class Etapa {
           actualizacionAsignacion: actualizacionAsignacion,
           resEnviarNotificacion: resEnviarNotificacion
         })
-
         return
       }
 
@@ -509,8 +507,9 @@ export class Etapa {
   //  DELETE
   //-------------------------
   deleteHistorialEtapa = async (req, res) => {
-    const { ProEtapaHistorialId } = req.body
-    console.log(ProEtapaHistorialId)
+    const { ProEtapaHistorialId, NombreProducto, NombreEtapa, Archivo } =
+      req.body
+    console.log(ProEtapaHistorialId, NombreProducto, NombreEtapa, Archivo)
     if (!ProEtapaHistorialId) {
       res.status(400).json({
         mensaje: 'El ProgresoEtapaId es obligatorio para eliminar el registro'
@@ -519,9 +518,21 @@ export class Etapa {
     }
 
     try {
+      console.log(ProEtapaHistorialId)
       const response = await etapas.deleteEtapaHistorial({
         ProEtapaHistorialId
       })
+
+      //ELIMINA EL ARCHIVO DE LA RUTA
+      const archivo = `${NombreProducto}\\${NombreEtapa}\\${Archivo}`
+      console.log('Archivo...', archivo)
+      if (NombreProducto && NombreEtapa && Archivo) {
+        const rutaFile = `${process.env.FILESPATH}\\${archivo}`
+        console.log('Eliminando el archivo...')
+        console.log('rutaFile...', rutaFile)
+        await deleteFile(rutaFile)
+      }
+
       res.status(200).json({
         mensaje: 'Registro eliminado correctamente...',
         response: response
