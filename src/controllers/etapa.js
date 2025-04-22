@@ -9,6 +9,7 @@ import fs from 'fs/promises'
 import { saveFile, deleteFile } from '../files/files.js'
 // import path from 'path'
 import process from 'process'
+import insertLog from '../sql/logs.js'
 const etapas = new Etapas_sql()
 const producto = new NuevoProducto()
 
@@ -273,6 +274,16 @@ export class Etapa {
         mensaje: 'Los usuarios actualizados correctamente...',
         resultados
       })
+
+      //INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_GRUPOS_USUARIOS_ETAPAS',
+        TipoOperacion: 'UPDATE',
+        Descripcion: `SE HAN ACTUALIZADO LOS USUARIOS DE LA ETAPA ${EtapaId}`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 6
+      })
     } catch (err) {
       console.error('❌ Error al asignar etapas:', err)
       res.status(500).json({ error: 'Error en la asignación de etapas' })
@@ -311,13 +322,22 @@ export class Etapa {
         DesarrolloProductoId,
         EtapaId
       })
-      // console.log(resEnviarNotificacion)
-      // console.log(resUpdate)
+
       res.status(200).json({
         mensaje: 'Etapa Inciada exitosamente...',
         resultInsert: resInsert,
         resultUpdate: resUpdate,
         resEnviarNotificacion: resEnviarNotificacion
+      })
+
+      //INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_PROGRESO_ETAPAS',
+        TipoOperacion: 'INSERT',
+        Descripcion: `SE HA INICIADO LA ETAPA ${EtapaId} PARA EL PRODUCTO ${DesarrolloProductoId}`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 5
       })
     } catch (err) {
       console.error('❌ Error al obtener la informacion de la etapa:', err)
@@ -427,6 +447,18 @@ export class Etapa {
         response: response,
         actualizacionAsignacion: actualizacionAsignacion
       })
+
+      //INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_PROGRESO_ETAPAS_HISTORIAL',
+        TipoOperacion: 'INSERT',
+        Descripcion: `SE HA INSERTADO UNA ACTUALIZACION PARA EL PROGREO DE LA ETAPA ${ProgresoEtapaId}, ${
+          req.file ? 'CON ARCHIVO' : 'SIN ARCHIVO'
+        }`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 5
+      })
     } catch (err) {
       console.error('❌ Error al insert una actualizacion:', err)
       res.status(500).json({ error: 'Error en insertar una actualizacion' })
@@ -486,9 +518,7 @@ export class Etapa {
       })
 
       const response = await Promise.all(reasignaciones)
-      // const actualizacionRes = await Promise.all(actualizarProgresoEtapa)
       console.log('Actualizaciones:', response, actualizarProducto)
-
       // ENVIAR NOTIFICACIONES AL REASIGNAR ETAPAS
       await notificacionSiguientesEtapas({ DesarrolloProductoId, EtapaId: 1 })
 
@@ -496,6 +526,18 @@ export class Etapa {
         mensaje: 'Actualizacion de etapas aprobadas...',
         productoActualizado: actualizarProducto,
         response: response
+      })
+
+      //INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_ETAPAS_ASIGNADAS',
+        TipoOperacion: 'UPDATE',
+        Descripcion: `REASIGNANDO LAS ETAPAS ${Etapas.map(
+          (e) => `${e?.EtapaId}`
+        )} PARA EL PRODUCTO ${DesarrolloProductoId}`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 6
       })
     } catch (err) {
       console.error('❌Error al actualizar el estado de las etapas:', err)

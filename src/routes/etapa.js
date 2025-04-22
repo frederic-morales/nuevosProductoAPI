@@ -31,15 +31,14 @@ export const etapa_router = () => {
   )
 
   //POST
-  router.post('/etapa/asignarUsuarios', etapa.asignarUsuarios)
-  router.post('/etapa/iniciar', etapa.iniciarEtapa)
-
-  //ACTUALIZACION DE ETAPA ARCHIVO OPCIONAL
+  router.post('/etapa/asignarUsuarios', etapa.asignarUsuarios) // CON LOG
+  router.post('/etapa/iniciar', etapa.iniciarEtapa) // CON LOG
+  //ACTUALIZACION DE ETAPA - ARCHIVO OPCIONAL
   router.post(
     '/etapa/progreso/actualizacion',
     uploadFile.single('Archivo'),
     etapa.agregarActualizacion
-  )
+  ) // CON LOG
   router.post('/etapa/reasignarEtapas', etapa.reasignarEtapas)
   //DELETE
   router.delete('/etapa/historial', etapa.deleteHistorialEtapa)

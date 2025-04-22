@@ -4,6 +4,8 @@
 import { Etapas_sql } from '../sql/etapas.js'
 import { NuevoProducto } from '../sql/producto.js'
 import { notificacionSiguientesEtapas } from '../notifications/sendEmail.js'
+import insertLog from '../sql/logs.js'
+
 const nuevoProducto = new NuevoProducto()
 const etapas = new Etapas_sql()
 
@@ -155,8 +157,17 @@ export class Producto {
         serie
       })
       console.log(nuevoProductoId)
-
       res.status(200).json({ nuevoProductoId: nuevoProductoId })
+
+      // INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_DESARROLLO_PRODUCTOS',
+        TipoOperacion: 'INSERT',
+        Descripcion: `SE CREO UN NUEVO DESARROLLO DE PRODUCTO`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 5
+      })
     } else {
       res.status(400).json({ error: 'Nombre y Descripcion son obligatorios' })
     }
@@ -194,6 +205,16 @@ export class Producto {
       res.status(201).json({
         mensaje: 'Todas las etapas fueron asignadas correctamente',
         resultados
+      })
+
+      //INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_DESARROLLO_PRODUCTOS',
+        TipoOperacion: 'UPDATE',
+        Descripcion: `SE HA ACTUALIZADO EL DESARROLLO DE PRODUCTO`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 6
       })
     } catch (err) {
       console.error('❌ Error al asignar etapas:', err)

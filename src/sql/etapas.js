@@ -505,9 +505,9 @@ export class Etapas_sql {
         .request()
         .input('ProEtapaHistorialId', sql.Int, ProEtapaHistorialId)
 
-      const resultado = await request.query(`
-        DELETE IND_PROGRESO_ETAPAS_HISTORIAL WHERE ProEtapaHistorialId = @ProEtapaHistorialId
-      `)
+      const resultado = await request.query(
+        `DELETE IND_PROGRESO_ETAPAS_HISTORIAL WHERE ProEtapaHistorialId = @ProEtapaHistorialId`
+      )
 
       console.log('Eliminando el historial de la etapa: ', ProEtapaHistorialId)
       console.log('-------------------------')

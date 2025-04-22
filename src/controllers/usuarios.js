@@ -11,7 +11,6 @@ export class Usuarios_con {
   //-------------------------
   //GETS
   //-------------------------
-
   //TRAE TODOS LOS USUARIOS
   getAll = async (req, res) => {
     try {
@@ -48,12 +47,14 @@ export class Usuarios_con {
   getEtapasAsignadas = async (req, res) => {
     const Usuario = req.params.user
     const Serie = req.params.serie
+
+    // console.log(Usuario, Serie)
     if (!Usuario || !Serie) {
       res.status(400).json({ message: 'El usuario es obligatorio' })
     }
+
     try {
       console.log(Serie)
-
       const productosUsuario = await usuarios.getProductosPorUsuario({
         Usuario,
         Serie

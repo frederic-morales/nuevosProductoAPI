@@ -1,9 +1,6 @@
 //--------------------------------------------------------
 //CLASE PARA MANEJAR LAS CONSULTAS DE LOS NUEVOS PRODUCTOS
 //--------------------------------------------------------
-// import { sqlConfig } from './configDB.js'
-// import sql from 'mssql'
-
 import { poolPromise } from './configDB.js'
 import sql from 'mssql'
 
