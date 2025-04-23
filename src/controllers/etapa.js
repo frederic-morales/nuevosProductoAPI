@@ -46,6 +46,29 @@ export class Etapa {
   //   }
   // }
 
+  //TRAE LA INFORMACION DE UNA ETAPA
+  getInfo = async (req, res) => {
+    const EtapaId = req.params.etapaId
+    console.log(EtapaId)
+    if (!EtapaId) {
+      res.status(400).json({ message: 'El EtapaId es obligatorio' })
+      return
+    }
+    try {
+      const etapaInfo = await etapas.getInfo({ EtapaId })
+      if (!etapaInfo) {
+        res.status(404).json({ message: 'Etapa no encontrada' })
+        return
+      }
+      console.log(etapaInfo)
+      res.status(200).json(etapaInfo)
+      // console.log(etapaInfo)
+    } catch (err) {
+      console.error('❌ Error al obtener la informacion de la etapa:', err)
+      res.status(500).json({ error: 'Error en la obtención de la etapa' })
+    }
+  }
+
   //TRAE TODAS LAS ETAPAS
   getAll = async (req, res) => {
     try {
@@ -309,7 +332,11 @@ export class Etapa {
       await insertLog({
         NombreTabla: 'IND_GRUPOS_USUARIOS_ETAPAS',
         TipoOperacion: 'UPDATE',
-        Descripcion: `SE HAN ACTUALIZADO LOS USUARIOS DE LA ETAPA ${EtapaId}`,
+        Descripcion: `SE HAN ACTUALIZADO LOS USUARIOS DE LA ETAPA ${EtapaId} -- USUARIOS ELIMINADOS: ${usuariosParaEliminar.map(
+          (e) => `${e?.Usuario}`
+        )} -- USUARIOS ASIGNADOS: ${usuariosParaAgregar.map(
+          (e) => `${e?.Usuario}`
+        )}`,
         UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
         IpOrigen: req.ip,
         IdEvento: 6

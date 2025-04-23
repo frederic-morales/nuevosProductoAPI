@@ -6,7 +6,7 @@ import process from 'node:process'
 import cors from 'cors'
 
 //MIDDLEWARES
-import { verifyToken } from './middlewares/verifyToken.js'
+// import { verifyToken } from './middlewares/verifyToken.js'
 // import { logsSistem } from './middlewares/logsSistem.js'
 
 const app = express()
@@ -14,7 +14,7 @@ const app = express()
 app.disable('x-powered-by')
 app.use(express.json())
 app.use(cors())
-app.use(verifyToken)
+// app.use(verifyToken)
 // app.use(logsSistem)
 
 app.use('/', producto_router())

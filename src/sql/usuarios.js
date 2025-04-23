@@ -56,10 +56,28 @@ export class Usuarios {
         .input('Password', sql.VarChar(20), Password)
 
       const result = await request.execute('SP_VALIDACION_USUARIO')
-      console.log('Verificacion:', result?.returnValue)
+      // console.log('Verificacion:', result?.returnValue)
       return result?.returnValue
     } catch (err) {
-      console.error('Error al validar el usuario', Usuario, err)
+      console.error('Error al validar el usuario 1', Usuario, err)
+    }
+  }
+
+  //VERIFICAR SI USUARIO TIENE ETAPAS ASIGNADAS
+  async verificarUsuarioEtapas({ Usuario }) {
+    try {
+      const pool = await poolPromise
+      const request = await pool
+        .request()
+        .input('Usuario', sql.VarChar(20), Usuario)
+
+      const result = await request.execute(`SP_USUARIO_ASIG_ETAPAS_V4`)
+      console.log('Verificando si el usuario tiene etapas asignadas...')
+      console.log('Usuario:', Usuario)
+      console.log('Resultado:', result?.returnValue)
+      return result?.returnValue == 1 ? true : false
+    } catch (err) {
+      console.error('Error al validar el usuario 2', Usuario, err)
     }
   }
 

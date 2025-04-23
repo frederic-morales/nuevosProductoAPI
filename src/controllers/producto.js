@@ -36,6 +36,16 @@ export class Producto {
         message: `Traendo todos los productos con serie ${serie}`,
         productos: productos
       })
+
+      //INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_DESARROLLO_PRODUCTOS',
+        TipoOperacion: 'SELECT',
+        Descripcion: `SE TRAJERON TODOS LOS PRODUCTOS CON SERIE ${serie}`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 4
+      })
     } catch (err) {
       console.error('❌ Error al traer los productos por serie:', err)
       res.status(500).json({ error: 'Error al traer las columnas' })
@@ -71,6 +81,16 @@ export class Producto {
       res.status(200).json({
         mensaje: `Traendo la informacion del producto ${productoId}...`,
         productoInfo: response
+      })
+
+      //INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_DESARROLLO_PRODUCTOS',
+        TipoOperacion: 'SELECT',
+        Descripcion: `SE INGRESO AL PRODUCTO - ${response[0]?.Nombre}`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 4
       })
     } catch (err) {
       console.error('Error al traer la info del producto:', err)

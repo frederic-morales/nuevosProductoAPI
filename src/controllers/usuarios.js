@@ -123,10 +123,25 @@ export class Usuarios_con {
       let token = null
       const usuario = await usuarios.informacionUsuario({ Usuario })
       const user = usuario[0]
+
+      const existeEtapas = await usuarios.verificarUsuarioEtapas({
+        Usuario
+      })
+
+      // console.log(existeEtapas)
       switch (verificacion) {
         case 0:
+          if (!existeEtapas) {
+            // Si no tiene etapas asignadas o no es de TEC O ID
+            res.status(200).json({
+              message: `El usuario ${Usuario} no tiene permiso de acceder...`,
+              verificacion: false,
+              user: {}
+            })
+            return
+          }
           token = jwt.sign(user, process.env.JWT_SECRET, {
-            expiresIn: '1h'
+            expiresIn: '30m'
           })
           console.log('Token generado:', token)
           res.status(200).json({

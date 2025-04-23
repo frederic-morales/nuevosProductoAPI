@@ -8,6 +8,21 @@ import sql from 'mssql'
 //-------------------------
 //TRAE TODAS LAS ETAPAS
 export class Etapas_sql {
+  async getInfo({ EtapaId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool.request().input('EtapaId', sql.Int, EtapaId)
+      const resultado = await request.query(
+        `SELECT * FROM IND_ETAPAS WHERE EtapaId = @EtapaId`
+      )
+      console.log('Traendo la etapa seleccionada')
+      console.log('-------------------------')
+      // console.log(resultado.recordset)
+      return resultado.recordset[0]
+    } catch (err) {
+      console.error('Error al traer la etapa con el usuario!!:', err)
+    }
+  }
   async getAll() {
     try {
       const pool = await poolPromise
