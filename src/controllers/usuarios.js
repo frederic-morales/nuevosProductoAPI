@@ -3,6 +3,7 @@ import { Etapas_sql } from '../sql/etapas.js'
 import jwt from 'jsonwebtoken'
 import process from 'process'
 import { config } from 'dotenv'
+import insertLog from '../sql/logs.js'
 config()
 const usuarios = new Usuarios()
 const etapas = new Etapas_sql()
@@ -133,6 +134,16 @@ export class Usuarios_con {
             verificacion: true,
             user: usuario[0],
             token: token
+          })
+
+          //INSERTAR LOG
+          await insertLog({
+            NombreTabla: 'SP_VALIDACION_USUARIO - SP',
+            TipoOperacion: 'LOGIN',
+            Descripcion: `INICIO DE SESION EXITOSO - ${Usuario}`,
+            UsuarioApp: Usuario, // Usuario que inicio sesion
+            IpOrigen: req.ip,
+            IdEvento: 1
           })
           break
         case 1:

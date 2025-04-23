@@ -22,29 +22,29 @@ export class Etapa {
   }
 
   //NUEVA
-  getEpatasEnProcesoActual = async (req, res) => {
-    try {
-      const DesarrolloProductoId = req.params.ProductoId
-      if (!DesarrolloProductoId) {
-        res.status(400).json({ message: 'El Id del producto es obligatorio' })
-        return
-      }
+  // getEpatasEnProcesoActual = async (req, res) => {
+  //   try {
+  //     const DesarrolloProductoId = req.params.ProductoId
+  //     if (!DesarrolloProductoId) {
+  //       res.status(400).json({ message: 'El Id del producto es obligatorio' })
+  //       return
+  //     }
 
-      const etapasIniciadasEnProcesoActual =
-        await etapas.getEtapasIniciadasEnProcesoActual({
-          ProductoId: DesarrolloProductoId
-        })
+  //     const etapasIniciadasEnProcesoActual =
+  //       await etapas.getEtapasIniciadasEnProcesoActual({
+  //         ProductoId: DesarrolloProductoId
+  //       })
 
-      res.status(200).json({
-        etapasEnProcesoActual: etapasIniciadasEnProcesoActual
-      })
-    } catch (err) {
-      console.error('❌ Error al traer iniciadas en el proceso actual:', err)
-      res
-        .status(500)
-        .json({ error: 'Error al traer iniciadas en el proceso actual' })
-    }
-  }
+  //     res.status(200).json({
+  //       etapasEnProcesoActual: etapasIniciadasEnProcesoActual
+  //     })
+  //   } catch (err) {
+  //     console.error('❌ Error al traer iniciadas en el proceso actual:', err)
+  //     res
+  //       .status(500)
+  //       .json({ error: 'Error al traer iniciadas en el proceso actual' })
+  //   }
+  // }
 
   //TRAE TODAS LAS ETAPAS
   getAll = async (req, res) => {
@@ -68,6 +68,16 @@ export class Etapa {
       // Espera a que todas las consultas se completen antes de enviar la informacion al usuario
       const response = await Promise.all(etapasConUsuarios)
       res.status(200).json(response)
+
+      // INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_ETAPAS',
+        TipoOperacion: 'SELECT',
+        Descripcion: `CONSULTA DE TODAS LAS ETAPAS - MENU ACTUALIZACIÓN DE ETAPAS`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 4
+      })
     } catch (err) {
       console.error('❌ Error al traer todas las etapas:', err)
       res.status(500).json({ error: 'Error en la obtención de las etapas' })
@@ -185,6 +195,16 @@ export class Etapa {
         response: response
       })
       // console.log(response)
+
+      // INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_PROGRESO_ETAPAS',
+        TipoOperacion: 'SELECT',
+        Descripcion: `CONSULTA DEL HISTORIAL DE LA ETAPA ${EtapaId} DEL PRODUCTO ${DesarrolloProductoId}`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 4
+      })
     } catch (err) {
       console.error('❌ Error al obtener el historial de la etapa:', err)
       res.status(500).json({ error: 'Error al obtener el historial' })
@@ -210,6 +230,16 @@ export class Etapa {
           console.error('Error al descargar el archivo:', err)
           res.status(500).json({ error: 'Error al descargar el archivo' })
         }
+      })
+
+      // INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_PROGRESO_ETAPAS_HISTORIAL',
+        TipoOperacion: 'SELECT',
+        Descripcion: `DESCARGANDO ARCHIVO ${archivo} DE LA ETAPA ${nombreEtapa} DEL PRODUCTO ${nombreProducto}`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 4
       })
     } catch (err) {
       console.error('❌ Error al enviar el archivo:', err)
@@ -438,6 +468,20 @@ export class Etapa {
           actualizacionAsignacion: actualizacionAsignacion,
           resEnviarNotificacion: resEnviarNotificacion
         })
+
+        //INSERTAR LOG
+        await insertLog({
+          NombreTabla: 'IND_PROGRESO_ETAPAS_HISTORIAL, IND_PROGRESO_ETAPAS',
+          TipoOperacion: 'UPDATE',
+          Descripcion: `SE HA ${
+            Estado == 1 ? 'APROBADO' : 'RECHAZADO'
+          } LA ETAPA ${EtapaId} DEL PRODUCTO ${DesarrolloProductoId} ${
+            req.file ? 'CON ARCHIVO' : 'SIN ARCHIVO'
+          }`,
+          UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+          IpOrigen: req.ip,
+          IdEvento: `${Estado == 1 ? 12 : 13}`
+        })
         return
       }
 
@@ -450,9 +494,9 @@ export class Etapa {
 
       //INSERTAR LOG
       await insertLog({
-        NombreTabla: 'IND_PROGRESO_ETAPAS_HISTORIAL',
+        NombreTabla: 'IND_PROGRESO_ETAPAS_HISTORIAL, IND_PROGRESO_ETAPAS',
         TipoOperacion: 'INSERT',
-        Descripcion: `SE HA INSERTADO UNA ACTUALIZACION PARA EL PROGREO DE LA ETAPA ${ProgresoEtapaId}, ${
+        Descripcion: `SE HA ACTUALIZADO EL PROGRESO DE LA ETAPA ${EtapaId} DEL PRODUCTO ${DesarrolloProductoId} - ${
           req.file ? 'CON ARCHIVO' : 'SIN ARCHIVO'
         }`,
         UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
@@ -579,9 +623,19 @@ export class Etapa {
         mensaje: 'Registro eliminado correctamente...',
         response: response
       })
+
+      //INSERTAR LOG
+      await insertLog({
+        NombreTabla: 'IND_PROGRESO_ETAPAS_HISTORIAL',
+        TipoOperacion: 'DELETE',
+        Descripcion: `SE HA ELIMINADO UNA ACTUALIZACION PARA EL PROGRESO DE LA ETAPA ${ProEtapaHistorialId}`,
+        UsuarioApp: req?.user?.Usuario, // Usuario que inicio sesion
+        IpOrigen: req.ip,
+        IdEvento: 7
+      })
     } catch (err) {
       console.error('❌ Error al eliminar el registro:', err)
-      res.status(500).json({ error: 'Error al eliminar el registro' })
+      res.status(500).json({ error: '❌ Error al eliminar el registro' })
     }
   }
 }

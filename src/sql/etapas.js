@@ -146,23 +146,23 @@ export class Etapas_sql {
 
   //NUEVA
   //TRAE LAS ETAPAS INICIADAS EN EL PROCESO ACTUAL
-  async getEtapasIniciadasEnProcesoActual({ ProductoId }) {
-    try {
-      const pool = await poolPromise
-      const request = pool.request()
-      request.input('DesarrolloProducto', sql.Int, ProductoId)
-      const resultado = await request.query(`
-                SELECT * FROM IND_ETAPAS E
-                  JOIN IND_PROGRESO_ETAPAS P ON E.EtapaId = P.Etapa
-                WHERE P.DesarrolloProducto = @DesarrolloProducto AND P.Correlativo IS NULL 
-                ORDER BY EtapaId`)
-      console.log('Trae las etapas iniciadas en el proceso actual', ProductoId)
-      console.log('-------------------------')
-      return resultado.recordset
-    } catch (err) {
-      console.error('Error al traer iniciadas en el proceso actual!!:', err)
-    }
-  }
+  // async getEtapasIniciadasEnProcesoActual({ ProductoId }) {
+  //   try {
+  //     const pool = await poolPromise
+  //     const request = pool.request()
+  //     request.input('DesarrolloProducto', sql.Int, ProductoId)
+  //     const resultado = await request.query(`
+  //               SELECT * FROM IND_ETAPAS E
+  //                 JOIN IND_PROGRESO_ETAPAS P ON E.EtapaId = P.Etapa
+  //               WHERE P.DesarrolloProducto = @DesarrolloProducto AND P.Correlativo IS NULL
+  //               ORDER BY EtapaId`)
+  //     console.log('Trae las etapas iniciadas en el proceso actual', ProductoId)
+  //     console.log('-------------------------')
+  //     return resultado.recordset
+  //   } catch (err) {
+  //     console.error('Error al traer iniciadas en el proceso actual!!:', err)
+  //   }
+  // }
 
   //TRAE TODA LA INFORMACION DE LA ETAPA SELECCIONADA
   async historial({ etapaAsignadaId, productoId }) {

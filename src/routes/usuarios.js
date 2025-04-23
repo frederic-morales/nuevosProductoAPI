@@ -14,6 +14,6 @@ export const usuario_router = () => {
     usuarios.getEtapasAsignadas
   )
   //POST
-  router.post('/usuarios/verificacion', usuarios.verificacionUsuario)
+  router.post('/usuarios/verificacion', usuarios.verificacionUsuario) // CON LOG
   return router
 }
