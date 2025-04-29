@@ -17,9 +17,6 @@ export const saveFile = async (file, body) => {
   console.log('Body....', body)
   const { NombreEtapa, NombreProducto } = body
 
-  console.log('NombreProducto...', NombreProducto)
-  console.log('NombreEtapa...', NombreEtapa)
-
   const rutaFolder = path.join(
     process.env.FILESPATH,
     limpiarNombres(NombreProducto),

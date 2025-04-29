@@ -138,8 +138,8 @@ export class NuevoProducto {
           INSERT INTO IND_ETAPAS_ASIGNADAS (DesarrolloProducto, EtapaId)
           VALUES (@DesarrolloProducto, @EtapaId)
       `)
-      console.log('Asignando una etapa al producto...', desarrolloProducto)
-      console.log('-------------------------')
+      // console.log('Asignando una etapa al producto...', desarrolloProducto)
+      // console.log('-------------------------')
       return resultado
     } catch (err) {
       console.error('Error al asignar las etapas del nuevo producto :', err)
@@ -190,6 +190,22 @@ export class NuevoProducto {
 
       console.log('Update: ', resultado)
       return resultado.recordset
+    } catch (err) {
+      console.error('Error al actualizar el Producto:', err)
+    }
+  }
+
+  //SP - PARA VERIFICAR SI TODAS LAS ETAPAS ESTAN COMPLETAS, SI ESTAN COMPLETAS, CAMBIAR EL ESTADO DEL PRODUCTO A 1
+  async aprobarProducto({ DesarrolloProductoId }) {
+    try {
+      const pool = await poolPromise
+      const request = pool
+        .request()
+        .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
+
+      const resultado = await request.execute(`SP_APROBAR_PRODUCTO_V2`)
+      console.log('Aprobando producto...', resultado)
+      return resultado
     } catch (err) {
       console.error('Error al actualizar el Producto:', err)
     }

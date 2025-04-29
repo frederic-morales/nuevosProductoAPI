@@ -195,10 +195,14 @@ export class Producto {
 
   //ASIGNACION DE LAS ETAPAS
   asignarEtapas = async (req, res) => {
-    const { desarrolloProducto, etapas } = req.body
-    console.log(desarrolloProducto, etapas)
+    const { desarrolloProducto, etapasProd } = req.body
+    console.log(desarrolloProducto, etapasProd)
 
-    if (!Array.isArray(etapas) || etapas.length === 0 || !desarrolloProducto) {
+    if (
+      !Array.isArray(etapasProd) ||
+      etapas.length === 0 ||
+      !desarrolloProducto
+    ) {
       res.status(400).json({
         error: 'El desarrolloproductoId y el array de etapas es requerido'
       })
@@ -207,7 +211,7 @@ export class Producto {
 
     try {
       const resultados = []
-      for (const etapa of etapas) {
+      for (const etapa of etapasProd) {
         const { EtapaId } = etapa
         const res = await nuevoProducto.asingarEtapa({
           desarrolloProducto,
@@ -216,6 +220,23 @@ export class Producto {
         resultados.push(res)
       }
 
+      //CALCULAR EL TIEMPO TOTAL ESTIMADO DEL PRODUCTO
+      const etapasAsignadas = await etapas.getEtapasAsignadas({
+        ProductoId: desarrolloProducto
+      })
+      let tiempoTotalEstimado = 0
+      for (const etapa of etapasAsignadas) {
+        const tiempoEstimado = etapa?.TiempoEstimado
+        tiempoTotalEstimado += parseInt(tiempoEstimado)
+      }
+      await nuevoProducto.update({
+        DesarrolloProductoId: desarrolloProducto,
+        updates: {
+          tiempoEstimado: tiempoTotalEstimado
+        }
+      })
+
+      // console.log('Tiempo total estimado:', tiempoTotalEstimado)
       // NOTIFICACION PARA INICIAR LA ETAPA 1
       await notificacionSiguientesEtapas({
         DesarrolloProductoId: desarrolloProducto,

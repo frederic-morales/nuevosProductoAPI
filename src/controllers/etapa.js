@@ -21,31 +21,6 @@ export class Etapa {
     res.status(200).json({ message: 'Server running - etapa' })
   }
 
-  //NUEVA
-  // getEpatasEnProcesoActual = async (req, res) => {
-  //   try {
-  //     const DesarrolloProductoId = req.params.ProductoId
-  //     if (!DesarrolloProductoId) {
-  //       res.status(400).json({ message: 'El Id del producto es obligatorio' })
-  //       return
-  //     }
-
-  //     const etapasIniciadasEnProcesoActual =
-  //       await etapas.getEtapasIniciadasEnProcesoActual({
-  //         ProductoId: DesarrolloProductoId
-  //       })
-
-  //     res.status(200).json({
-  //       etapasEnProcesoActual: etapasIniciadasEnProcesoActual
-  //     })
-  //   } catch (err) {
-  //     console.error('❌ Error al traer iniciadas en el proceso actual:', err)
-  //     res
-  //       .status(500)
-  //       .json({ error: 'Error al traer iniciadas en el proceso actual' })
-  //   }
-  // }
-
   //TRAE LA INFORMACION DE UNA ETAPA
   getInfo = async (req, res) => {
     const EtapaId = req.params.etapaId
@@ -240,10 +215,11 @@ export class Etapa {
     if (!nombreProducto || !nombreEtapa || !archivo) {
       res.status(400).json({ message: 'El parametro rutaFile es obligatorio' })
     }
-
     try {
-      //VERIFICA SI EL ARCHIVO EXISTE EN LA RUTA
-      const rutaFile = `${process.env.FILESPATH}\\${nombreProducto}\\${nombreEtapa}\\${archivo}`
+      // VERIFICA SI EL ARCHIVO EXISTE EN LA RUTA
+      // const archivo = '..\\archivos'
+      // const rutaFile = `${process.env.FILESPATH}\\${nombreProducto}\\${nombreEtapa}\\${archivo}`
+      const rutaFile = `archivos\\${nombreProducto}\\${nombreEtapa}\\${archivo}`
       console.log('rutaFile...', rutaFile)
       await fs.access(rutaFile)
 
@@ -482,6 +458,10 @@ export class Etapa {
         //Enviar notificacion de etapas siguientes si se aprobo la etapa
         console.log('Estado...', Estado)
         if (Estado == 1) {
+          // //SP VERIFICA SI SE PUEDE APROBAR EL PPRODUCTO
+          await producto.aprobarProducto({ DesarrolloProductoId })
+
+          // ENVIAR NOTIFICACION DE INICIO DE ETAPA
           await notificacionSiguientesEtapas({
             DesarrolloProductoId,
             EtapaId
@@ -590,6 +570,7 @@ export class Etapa {
 
       const response = await Promise.all(reasignaciones)
       console.log('Actualizaciones:', response, actualizarProducto)
+
       // ENVIAR NOTIFICACIONES AL REASIGNAR ETAPAS
       await notificacionSiguientesEtapas({ DesarrolloProductoId, EtapaId: 1 })
 

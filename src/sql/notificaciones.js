@@ -20,7 +20,6 @@ export class Notificaciones_sql {
                 JOIN IND_ETAPAS E ON E.EtapaId = P.Etapa
                 JOIN GEN_USUARIOS U ON U.Usuario = P.Usuario
                 WHERE P.DesarrolloProducto = @DesarrolloProductoId AND E.EtapaId = @EtapaId`)
-
       console.log('Traendo la informacion de la etapa con el usuario')
       console.log('-------------------------')
       return await resultado?.recordset[0]

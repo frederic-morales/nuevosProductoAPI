@@ -108,8 +108,8 @@ export class Etapas_sql {
                   JOIN IND_ETAPAS_ASIGNADAS A ON A.EtapaId = E.EtapaId
                 WHERE A.DesarrolloProducto = @DesarrolloProducto AND A.Correlativo IS NULL
                 ORDER BY EtapaId`)
-      console.log('Trae las etapas asignadas al producto', ProductoId)
-      console.log('-------------------------')
+      // console.log('Trae las etapas asignadas al producto', ProductoId)
+      // console.log('-------------------------')
       return resultado.recordset
     } catch (err) {
       console.error('Error al traer las Etapas Asignadas!!:', err)

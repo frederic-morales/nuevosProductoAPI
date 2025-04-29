@@ -69,7 +69,6 @@ export const notificacionSiguientesEtapas = async ({
   // console.log(etapasANotificar)
   // console.log(etapasANotificar)
   const etapasANotificar = await Promise.all(notificarEtapas)
-
   etapasANotificar.forEach(async (etapa) => {
     if (etapa?.PermitirInicio) {
       const mails = await etapa?.Correo

@@ -55,7 +55,7 @@ export class Usuarios_con {
     }
 
     try {
-      console.log(Serie)
+      // console.log(Serie)
       const productosUsuario = await usuarios.getProductosPorUsuario({
         Usuario,
         Serie
@@ -77,8 +77,7 @@ export class Usuarios_con {
             DesarrolloProductoId: ProductoId,
             EtapaId: EtapaId
           })
-
-          console.log(permitirInicio)
+          // console.log(permitirInicio)
 
           return {
             ...etapa,
@@ -87,7 +86,6 @@ export class Usuarios_con {
         })
 
         const responseEtapas = await Promise.all(etapasConPermiso)
-
         return {
           ...producto,
           etapas: responseEtapas
@@ -141,7 +139,7 @@ export class Usuarios_con {
             return
           }
           token = jwt.sign(user, process.env.JWT_SECRET, {
-            expiresIn: '30m'
+            expiresIn: '5h'
           })
           console.log('Token generado:', token)
           res.status(200).json({
