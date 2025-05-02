@@ -3,8 +3,11 @@ import process from 'process'
 import { config } from 'dotenv'
 config()
 
+// Este token se genera en el login y se envía al cliente para que lo almacene y lo envíe en cada petición
+// El middleware verifica el token en cada petición y permite o deniega el acceso a las rutas protegidas
+// Para que solo los usuarios autenticados puedan acceder a ciertas rutas
 export const verifyToken = async (req, res, next) => {
-  const whiteList = ['/usuarios/verificacion'] // Rutas que no requieren token
+  const whiteList = ['/usuarios/verificacion'] // Rutas que no requieren token -- LOGIN
   if (whiteList.includes(req.path)) return next()
   const header = req.header('Authorization')
   const token = header && header.split(' ')[1]
