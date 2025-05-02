@@ -40,7 +40,7 @@ src/
 
 ## Otros archivos
 
---- .env -> Variables de entorno que son accesibles desde cualquier parte del codigo
---- .http -> Pruebas de peticiones http (solo sirve para pruebas)
---- eslint.config.js -> Archivo de configuracion del linter(nos muestra errores en el codigo)
---- package.json -> Archivo que almacena las versiones de todos los paquetes npm instalados en el proyecto y la configuracion general del proyecto
+- .env -> Variables de entorno que son accesibles desde cualquier parte del codigo
+- .http -> Pruebas de peticiones http (solo sirve para pruebas)
+- eslint.config.js -> Archivo de configuracion del linter(nos muestra errores en el codigo)
+- package.json -> Archivo que almacena las versiones de todos los paquetes npm instalados en el proyecto y la configuracion general del proyecto
