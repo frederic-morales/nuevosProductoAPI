@@ -1,12 +1,13 @@
-# 🚀 Nombre de tu API
+# 🚀 Productos Nuevos API
 
-Breve descripción (1-2 líneas) sobre el propósito de la API. Ejemplo:  
 _"API REST para el modulo de Productos Nuevos, utilizando Express, SQL Server, JWT"_
 
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D%2018.0.0-brightgreen)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/express-4.18.2-lightgrey)](https://expressjs.com/)
 
 ## 📋 Requisitos Previos
+
+Instalar lo siguiente para correr el servidor:
 
 - Node.js >= 20.17.0 ([Descargar Node.js](https://nodejs.org/))
 - npm >= 10.8.2 (viene con Node.js) o yarn
@@ -17,9 +18,9 @@ _"API REST para el modulo de Productos Nuevos, utilizando Express, SQL Server, J
 - npm install
 - crear un archivo .env (variables de entorno) con lo siguiente
 - ejemplo:
-- - - PORT=3000
-- - - MONGODB_URI=mongodb://localhost:27017/nombre_db
-- - - JWT_SECRET=tu_clave_secreta
+- - PORT=3000
+- - MONGODB_URI=mongodb://localhost:27017/nombre_db
+- - JWT_SECRET=tu_clave_secreta
 
 ## Correr Servidor
 
@@ -28,13 +29,14 @@ _"API REST para el modulo de Productos Nuevos, utilizando Express, SQL Server, J
 ## Estructura del proyecto
 
 src/
-├── controllers/ # Lógica de endpoints ()
-├── files/ # Lógica de los archivos
-├── middlewares/ # Auth, validaciones, etc.
-├── notifications/ # Lógica de las notificaciones
-├── routes/ # Definición de rutas (HTTP)
-├── sql/ #
-└── server.js # Inicialización de Express
+
+- controllers/ # Lógica de endpoints ()
+- files/ # Lógica de los archivos
+- middlewares/ # Auth, validaciones, etc.
+- notifications/ # Lógica de las notificaciones
+- routes/ # Definición de rutas (HTTP)
+- sql/ #
+- server.js # Inicialización de Express
 
 ## Otros archivos
 
