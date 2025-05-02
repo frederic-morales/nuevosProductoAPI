@@ -22,11 +22,11 @@ Instalar lo siguiente para correr el servidor:
 - - MONGODB_URI=mongodb://localhost:27017/nombre_db
 - - JWT_SECRET=tu_clave_secreta
 
-## Correr Servidor
+## 🔥 Correr Servidor
 
 - node src/server.js
 
-## Estructura del proyecto
+## 🔥 Estructura del proyecto
 
 src/
 
@@ -38,9 +38,15 @@ src/
 - sql/ #
 - server.js # Inicialización de Express
 
-## Otros archivos
+## 🔥 Otros archivos
 
 - .env -> Variables de entorno que son accesibles desde cualquier parte del codigo
 - .http -> Pruebas de peticiones http (solo sirve para pruebas)
 - eslint.config.js -> Archivo de configuracion del linter(nos muestra errores en el codigo)
 - package.json -> Archivo que almacena las versiones de todos los paquetes npm instalados en el proyecto y la configuracion general del proyecto
+
+## 🔥 Proposito de cada carpeta
+
+**Controllers:**
+
+-

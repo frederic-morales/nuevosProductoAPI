@@ -388,14 +388,16 @@ export class Etapa {
       EstadoDescripcion,
       DesarrolloProductoId,
       EtapaId,
-      Rechazos
+      Rechazos,
+      Usuario
     } = req.body
     if (
       !ProgresoEtapaId ||
       !Estado ||
       !EstadoDescripcion ||
       !DesarrolloProductoId ||
-      !EtapaId
+      !EtapaId ||
+      !Usuario
     ) {
       res.status(400).json({
         mensaje:
@@ -417,7 +419,8 @@ export class Etapa {
         ProgresoEtapaId,
         Estado,
         Descripcion,
-        RutaDoc: rutaFile || null
+        RutaDoc: rutaFile || null,
+        Usuario
       })
 
       // TABLA DE ASIGNACION DE ETAPAS

@@ -240,7 +240,7 @@ export class Etapas_sql {
 
       const resultado = await request.query(`
           SELECT H.ProEtapaHistorialId, P.ProgresoEtapaId, P.DesarrolloProducto AS Producto, P.Etapa, P.FechaInicio, P.Estado AS ProgresoEstado,
-	          H.ProEtapaHistorialId AS HistorialId, H.Estado AS ActualizacionEstado, H.RutaDoc, H.Descripcion, H.FechaActualizacion
+	          H.ProEtapaHistorialId AS HistorialId, H.Estado AS ActualizacionEstado, H.RutaDoc, H.Descripcion, H.FechaActualizacion, H.Usuario
           FROM IND_PROGRESO_ETAPAS P
             JOIN IND_PROGRESO_ETAPAS_HISTORIAL H ON H.ProgresoEtapa = P.ProgresoEtapaId
           WHERE P.DesarrolloProducto = @DesarrolloProducto AND P.Etapa = @EtapaId AND ProgresoEtapaId = @ProgresoEtapaId
@@ -379,7 +379,8 @@ export class Etapas_sql {
     ProgresoEtapaId,
     Estado,
     RutaDoc = null,
-    Descripcion = null
+    Descripcion = null,
+    Usuario
   }) {
     try {
       const pool = await poolPromise
@@ -389,10 +390,11 @@ export class Etapas_sql {
         .input('Estado', sql.Int, Estado)
         .input('RutaDoc', sql.VarChar(250), RutaDoc)
         .input('Descripcion', sql.VarChar(500), Descripcion)
+        .input('Usuario', sql.VarChar(20), Usuario)
 
       const resultado = await request.query(`
-          INSERT INTO IND_PROGRESO_ETAPAS_HISTORIAL (ProgresoEtapa, Estado, RutaDoc, Descripcion)
-	            VALUES (@ProgresoEtapaId, @Estado, @RutaDoc, @Descripcion)`)
+          INSERT INTO IND_PROGRESO_ETAPAS_HISTORIAL (ProgresoEtapa, Estado, RutaDoc, Descripcion, Usuario)
+	            VALUES (@ProgresoEtapaId, @Estado, @RutaDoc, @Descripcion, @Usuario)`)
 
       console.log(`Agregando actualizacion para etapa ${ProgresoEtapaId}`)
       console.log('-------------------------')

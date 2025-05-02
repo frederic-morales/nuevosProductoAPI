@@ -21,8 +21,8 @@ app.use('/', usuario_router())
 const PORT = process.env.PORT || 3000
 
 ;(async () => {
-  // const ip = process.env.IP // IP local - DESERROLLADOR2
-  const ip = process.env.IP_SERVER // IP DEL SERVIDOR
+  const ip = process.env.IP // IP local - DESERROLLADOR2
+  // const ip = process.env.IP_SERVER // IP DEL SERVIDOR
   app.listen(PORT, '0.0.0.0', () => {
     // 0.0.0.0 PERMITE EL ACCESO DESDE CUALQUIER IP DENTRO DE LA RED LOCAL
     console.log(`Servidor local: http://localhost:${PORT}`)
