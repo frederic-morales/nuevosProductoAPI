@@ -129,7 +129,12 @@ export class Usuarios_con {
       // console.log(existeEtapas)
       switch (verificacion) {
         case 0:
-          if (!existeEtapas) {
+          if (
+            !existeEtapas &&
+            user?.CodigoGrupo != 69
+            // && user?.CodigoGrupo != 44 &&
+            // user?.CodigoGrupo != 35
+          ) {
             // Si no tiene etapas asignadas o no es de TEC O ID
             res.status(200).json({
               message: `El usuario ${Usuario} no tiene permiso de acceder...`,

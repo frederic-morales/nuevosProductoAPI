@@ -193,7 +193,6 @@ export class Etapa {
         response: response
       })
       // console.log(response)
-
       // INSERTAR LOG
       await insertLog({
         NombreTabla: 'IND_PROGRESO_ETAPAS',

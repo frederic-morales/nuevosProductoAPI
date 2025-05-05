@@ -54,7 +54,7 @@ export class Usuarios {
         .request()
         .input('Usuario', sql.VarChar(20), Usuario)
         .input('Password', sql.VarChar(20), Password)
-
+      // const result = await request.execute('SP_VALIDACION_USUARIO_V2')
       const result = await request.execute('SP_VALIDACION_USUARIO')
       // console.log('Verificacion:', result?.returnValue)
       return result?.returnValue
@@ -71,7 +71,8 @@ export class Usuarios {
         .request()
         .input('Usuario', sql.VarChar(20), Usuario)
 
-      const result = await request.execute(`SP_USUARIO_ASIG_ETAPAS_V4`)
+      // const result = await request.execute(`SP_USUARIO_ASIG_ETAPAS_V4`)
+      const result = await request.execute(`SP_USUARIO_ASIG_ETAPAS`)
       console.log('Verificando si el usuario tiene etapas asignadas...')
       console.log('Usuario:', Usuario)
       console.log('Resultado:', result?.returnValue)
@@ -109,7 +110,7 @@ export class Usuarios {
         .input('Usuario', sql.VarChar(20), Usuario)
         .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
 
-      const result = await request.query(`
+      const result = await request.query(`  
           SELECT 
                 DP.DesarrolloProductoId AS ProductoId,
                 DP.Serie, DP.Rechazos, --DP.Usuario, 
@@ -123,7 +124,8 @@ export class Usuarios {
           WHERE GU.Usuario = @Usuario 
           AND DP.DesarrolloProductoId = @DesarrolloProductoId
           AND A.Correlativo IS NULL
-          ORDER BY DP.DesarrolloProductoId, A.EtapaId`)
+          ORDER BY DP.DesarrolloProductoId, A.EtapaId
+          `)
 
       console.log('Traendo las etapas del usuario...', Usuario)
       return await result.recordset
@@ -152,7 +154,6 @@ export class Usuarios {
           AND DP.Serie = @Serie
           AND A.Correlativo IS NULL
           GROUP BY DP.DesarrolloProductoId, DP.Nombre, DP.Descripcion, DP.Usuario, DP.FechaInicio, DP.FechaFin, DP.Estado`)
-
       console.log('Traendo los productos por usuario...')
       return await result.recordset
     } catch (err) {

@@ -106,6 +106,7 @@ export class Producto {
       return
     }
     try {
+      // TRAE LAS ETAPAS ASIGNADAS AL PRODUCTO
       const etapasProducto = await etapas.getEtapasAsignadas({
         ProductoId: productoId
       })

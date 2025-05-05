@@ -286,7 +286,8 @@ export class Etapas_sql {
         .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
         .input('EtapaId', sql.Int, EtapaId)
 
-      const result = await request.execute('SP_VERIFICAR_DEPENDENCIAS_ETAPA_V3')
+      // const result = await request.execute('SP_VERIFICAR_DEPENDENCIAS_ETAPA_V3') - DB_ANTERIOR
+      const result = await request.execute('SP_VERIFICAR_DEPENDENCIAS_ETAPA')
       // console.log(result)
       return result.returnValue
     } catch (err) {
