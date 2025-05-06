@@ -1,4 +1,4 @@
-const mailHtmlEtapaSiguiente = (etapaInfo) => {
+const mailHtmlEtapaSiguiente = (etapaInfo, usuariosAIniciar) => {
   console.log(etapaInfo)
 
   // Obtener la fecha actual
@@ -98,11 +98,11 @@ const mailHtmlEtapaSiguiente = (etapaInfo) => {
           <p>Detalles:</p>
           <ul>
           <li><b>Fecha a Iniciar:</b> El ${fechaFormateada}</li>
-          <li><b>Usuario A Iniciar:</b> ${etapaInfo?.Usuario} </li>
-          <li><b>Nombre:</b> ${etapaInfo?.Nombres} ${etapaInfo?.Apellidos}</li>
+          <li><b>Responsable del desarrollo:</b> ${etapaInfo?.Nombres} ${etapaInfo?.Apellidos} </li>
+          <li><b>Usuarios a Iniciar Etapa:</b> ${usuariosAIniciar} </li>
           </ul>
-          <p>Puedes ver más detalles accediendo al sistema</p>
-          <a href="http://localhost:5173/Producto/All" class="button">Productos Nuevos</a>
+          <p>Puedes ver más detalles accediendo al sistema:</p>
+          <a href="http://10.10.1.4:3075/Login" class="button">Productos Nuevos</a>
         </div>
         <div class="footer">
           © 2025 Wellco Corporation. Departamento de tecnología.

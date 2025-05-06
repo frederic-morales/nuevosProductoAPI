@@ -349,10 +349,15 @@ export class Etapa {
         EtapaId
       })
 
+      // console.log('-----------Mostrando usuario----------')
+      // console.log(req?.user)
       // ENVIAR NOTIFICACION DE INICIO DE ETAPA
       const resEnviarNotificacion = await sendNotificacion({
         DesarrolloProductoId,
-        EtapaId
+        EtapaId,
+        esInicio: true,
+        Estado: 0,
+        UsuarioAccion: req?.user?.Nombres + ' ' + req?.user?.Apellidos // USUARIO CON SESION INCIADA
       })
 
       res.status(200).json({
@@ -435,32 +440,39 @@ export class Etapa {
           rechazos: Rechazos,
           estado: Estado
         }
-        const productoActualizacion = await producto.update({
+        await producto.update({
           DesarrolloProductoId,
           updates
         })
 
-        console.log(productoActualizacion)
+        // console.log(productoActualizacion)
       }
 
       // console.log(Estado = 1 o 2)
+
       if (Estado != 3) {
+        // console.log('-------------- ESTADO ---------------')
+        // console.log(Estado)
+        // console.log(EstadoDescripcion)
         const actualizacionProgreso = await etapas.actualizarProgresoEtapa({
           Estado,
           ProgresoEtapaId,
           EstadoDescripcion
         })
 
-        //Notificacion de Aprobacion y Rechazo
-        const resEnviarNotificacion = await sendNotificacion({
+        await sendNotificacion({
           DesarrolloProductoId,
-          EtapaId
+          EtapaId,
+          Descripcion,
+          esInicio: false,
+          Estado,
+          UsuarioAccion: req?.user?.Nombres + ' ' + req?.user?.Apellidos // USUARIO CON SESION INCIADA
         })
 
         //Enviar notificacion de etapas siguientes si se aprobo la etapa
         console.log('Estado...', Estado)
         if (Estado == 1) {
-          // //SP VERIFICA SI SE PUEDE APROBAR EL PPRODUCTO
+          // SP VERIFICA SI SE PUEDE APROBAR EL PPRODUCTO
           await producto.aprobarProducto({ DesarrolloProductoId })
 
           // ENVIAR NOTIFICACION DE INICIO DE ETAPA
@@ -474,8 +486,7 @@ export class Etapa {
           mensaje: 'Actualizacion agregada con exito',
           response: response,
           actualizacionProgreso: actualizacionProgreso,
-          actualizacionAsignacion: actualizacionAsignacion,
-          resEnviarNotificacion: resEnviarNotificacion
+          actualizacionAsignacion: actualizacionAsignacion
         })
 
         //INSERTAR LOG
@@ -493,6 +504,18 @@ export class Etapa {
         })
         return
       }
+      //ENVIAR NOTIFICACION DE ETAPA
+      // console.log('-----------Mostrando usuario----------')
+      // console.log(req?.user)
+      //Notificacion de Aprobacion, Rechazo y Actualización
+      await sendNotificacion({
+        DesarrolloProductoId,
+        EtapaId,
+        Estado,
+        Descripcion,
+        esInicio: false,
+        UsuarioAccion: req?.user?.Nombres + ' ' + req?.user?.Apellidos // USUARIO CON SESION INCIADA
+      })
 
       console.log('Actualizacion del progreso ingresada...')
       res.status(200).json({

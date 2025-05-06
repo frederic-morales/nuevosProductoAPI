@@ -109,7 +109,6 @@ export class Usuarios {
         .request()
         .input('Usuario', sql.VarChar(20), Usuario)
         .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
-
       const result = await request.query(`  
           SELECT 
                 DP.DesarrolloProductoId AS ProductoId,

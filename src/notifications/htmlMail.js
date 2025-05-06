@@ -1,10 +1,25 @@
-const mailHtml = (etapaInfo) => {
+const mailHtml = (
+  etapaInfo,
+  esInicio,
+  usuariosEtapa,
+  UsuarioAccion,
+  Descripcion,
+  Estado
+) => {
   console.log(etapaInfo)
+  console.log(Estado)
 
   // Obtener la fecha actual
-  const hoy = new Date()
-  const opciones = { day: '2-digit', month: 'long', year: 'numeric' }
-  const fechaFormateada = hoy.toLocaleDateString('es-ES', opciones)
+  // const hoy = new Date()
+  // const opciones = { day: '2-digit', month: 'long', year: 'numeric' }
+  // const fechaFormateada = hoy.toLocaleDateString('es-ES', opciones)
+
+  const sumarDiasFecha = (dias) => {
+    const hoy = new Date()
+    hoy.setDate(hoy.getDate() + dias)
+    const opciones = { day: '2-digit', month: 'long', year: 'numeric' }
+    return hoy.toLocaleDateString('es-ES', opciones)
+  }
 
   return `
 <!DOCTYPE html>
@@ -94,28 +109,45 @@ const mailHtml = (etapaInfo) => {
       </div>
       <div class="content">
         <p>Se acaba de realizar la siguiente accion: <b></b></p>
+        ${
+          esInicio
+            ? `<p class="etapaIniciada">Etapa Iniciada <br> ${
+                etapaInfo?.NombreEtapa
+              }</p>
+              <p><b>Fecha Inicio:</b> El ${sumarDiasFecha(0)}<br>
+              <b>Fecha estimada a culminar:</b> El ${sumarDiasFecha(
+                etapaInfo?.TiempoEstimado
+              )}</p>
+            `
+            : ''
+        }
           ${
-            etapaInfo?.ProgresoEstado === 3
-              ? `<p class="etapaIniciada">Etapa Iniciada <br> ${etapaInfo?.NombreEtapa}</p>`
+            Estado == 3
+              ? `<p class="etapaIniciada">Etapa Actualizada <br> ${etapaInfo?.NombreEtapa}</p>`
               : ''
           }
           ${
-            etapaInfo?.ProgresoEstado === 2
+            Estado == 2
               ? `<p class="etapaIniciada">Etapa Rechazada <br> ${etapaInfo?.NombreEtapa}</p>`
               : ''
           }
           ${
-            etapaInfo?.ProgresoEstado === 1
+            Estado == 1
               ? `<p class="etapaIniciada">Etapa Aprobada <br> ${etapaInfo?.NombreEtapa}</p>`
               : ''
           }
         <p>Detalles:</p>
         <ul>
-          <li><b>Fecha:</b> El ${fechaFormateada}</li>
-          <li><b>Usuario:</b> ${etapaInfo?.Nombres} ${etapaInfo?.Apellidos}</li>
+        ${!esInicio ? `<li><b>Fecha:</b> El ${sumarDiasFecha(0)}` : ''}</li>
+        <li><b>Usuario que realizó la acción:</b> ${UsuarioAccion}</li>
+        <li><b>Responsable del desarrollo:</b> ${etapaInfo?.Nombres} ${
+    etapaInfo?.Apellidos
+  } </li>
+        <li><b>Responsables de la Etapa:</b> ${usuariosEtapa} </li>
+        ${!esInicio ? `<li><b>Descripcion:</b> ${Descripcion}</li>` : ''}
         </ul>
         <p>Puedes ver más detalles accediendo al sistema</p>
-        <a href="http://localhost:5173/Producto/All" class="button">Productos Nuevos</a>
+        <a href="http://10.10.1.4:3075/Login" class="button">Productos Nuevos</a>
       </div>
       <div class="footer">
         © 2025 Wellco Corporation. Departamento de tecnología.

@@ -13,10 +13,11 @@ const etapasSQL = new Etapas_sql()
 config()
 
 const sendMail = async (mails, html) => {
+  console.log('mails:', mails)
   const mailOptions = {
     from: processs.env.MAILSENDER,
     to: `${mails}`,
-    subject: 'Enviando correo de prueba',
+    subject: 'CORREO DE PRUEBA - IGNORAR',
     html: `${html}`
   }
 
@@ -31,15 +32,57 @@ const sendMail = async (mails, html) => {
   })
 }
 
-export const sendNotificacion = async ({ DesarrolloProductoId, EtapaId }) => {
+export const sendNotificacion = async ({
+  DesarrolloProductoId,
+  EtapaId,
+  esInicio,
+  UsuarioAccion,
+  Descripcion,
+  Estado
+}) => {
   const etapaUsuario = await notificacionesSQL.getEtapaUsuario({
     DesarrolloProductoId,
     EtapaId
-  })
+  }) // INFORMACION DE LA ETAPA Y EL USUARIO RESPONSABLE
 
-  if (etapaUsuario) {
-    const mails = etapaUsuario?.Correo
-    const hmtl = await mailHtml(etapaUsuario)
+  const mailsEtapa = await notificacionesSQL.getCorreosEtapa({
+    DesarrolloProductoId,
+    EtapaId
+  }) // CORREOS DE LOS USUARIOS DE LA ETAPA
+
+  const mailsGrupo = await notificacionesSQL.getCorrreosGrupo({
+    CodigoGrupo: 69
+  }) // CORREOS DE LOS USUARIOS DEL GRUPO 69 - GERENTE_ID
+
+  // console.log('Correo responsable del producto:', etapaUsuario?.Correo)
+  // console.log('Correos de la etapa:', mailsEtapa)
+  // console.log('Correos del grupo:', mailsGrupo)
+  // console.log(etapaUsuario?.Correo, mailsEtapa, mailsGrupo)
+  // UNIENDO LOS CORREOS DE LOS USUARIOS DE LA ETAPA Y DEL GRUPO
+
+  const mails =
+    etapaUsuario?.Correo +
+    ',' +
+    mailsEtapa?.map((mail) => mail.Correo).join(',') +
+    ',' +
+    mailsGrupo?.map((mail) => mail.Correo).join(',')
+
+  const usuariosEtapa = mailsEtapa
+    ?.map((mail) => mail.Nombres + ' ' + mail.Apellidos)
+    .join(', ')
+
+  console.log(mails)
+
+  if (etapaUsuario && mailsEtapa && mailsGrupo) {
+    const hmtl = await mailHtml(
+      etapaUsuario,
+      esInicio,
+      usuariosEtapa,
+      UsuarioAccion,
+      Descripcion,
+      Estado
+    )
+    // return await sendMail('desarrollador2@wellcopharma.com', hmtl)
     return await sendMail(mails, hmtl)
   }
 }
@@ -67,12 +110,38 @@ export const notificacionSiguientesEtapas = async ({
   })
 
   // console.log(etapasANotificar)
-  // console.log(etapasANotificar)
   const etapasANotificar = await Promise.all(notificarEtapas)
   etapasANotificar.forEach(async (etapa) => {
     if (etapa?.PermitirInicio) {
-      const mails = await etapa?.Correo
-      const html = mailHtmlEtapaSiguiente(etapa)
+      // console.log('Etapa a iniciar:', etapa)
+      const mailsEtapa = await notificacionesSQL.getCorreosEtapa({
+        DesarrolloProductoId,
+        EtapaId: etapa?.EtapaId
+      }) // CORREOS DE LOS USUARIOS DE LA ETAPA
+      const mailsGrupo = await notificacionesSQL.getCorrreosGrupo({
+        CodigoGrupo: 69
+      }) // CORREOS DE LOS USUARIOS DEL GRUPO 69 - GERENTE_ID
+      // console.log('Etapas a Iniciar: ', etapa)
+      // console.log('Correo responsable del producto:', etapa?.Correo)
+      // console.log('Correos de la etapa:', mailsEtapa)
+      // console.log('Correos del grupo:', mailsGrupo)
+      const mails =
+        etapa?.Correo +
+        ',' +
+        mailsEtapa?.map((mail) => mail.Correo).join(',') +
+        ',' +
+        mailsGrupo?.map((mail) => mail.Correo).join(',')
+
+      const usuariosAIniciar = mailsEtapa
+        ?.map((mail) => mail.Nombres + ' ' + mail.Apellidos)
+        .join(', ')
+
+      console.log(mails)
+      // console.log('Usuarios a iniciar: ', mailsEtapa)
+
+      const html = mailHtmlEtapaSiguiente(etapa, usuariosAIniciar)
+
+      // return await sendMail('desarrollador2@wellcopharma.com', html)
       return await sendMail(mails, html)
     }
   })

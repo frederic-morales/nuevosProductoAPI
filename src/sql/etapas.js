@@ -482,7 +482,7 @@ export class Etapas_sql {
           SET Estado = @Estado, FechaFinal = @FechaFinal, DescripcionEstado = @EstadoDescripcion, Correlativo = @Correlativo
         WHERE ProgresoEtapaId = @ProgresoEtapaId
         `)
-      console.log(Estado)
+      // console.log(Estado)
       console.log(`Actualizando el progreso de la etapa ${ProgresoEtapaId}`)
       console.log('-------------------------')
       console.log(await resultado)
