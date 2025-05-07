@@ -131,9 +131,9 @@ export class Usuarios_con {
         case 0:
           if (
             !existeEtapas &&
-            user?.CodigoGrupo != 69
-            // && user?.CodigoGrupo != 44 &&
-            // user?.CodigoGrupo != 35
+            user?.CodigoGrupo != 69 &&
+            user?.CodigoGrupo != 44 &&
+            user?.CodigoGrupo != 35
           ) {
             // Si no tiene etapas asignadas o no es de TEC O ID
             res.status(200).json({

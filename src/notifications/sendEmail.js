@@ -82,6 +82,7 @@ export const sendNotificacion = async ({
       Descripcion,
       Estado
     )
+
     // return await sendMail('desarrollador2@wellcopharma.com', hmtl)
     return await sendMail(mails, hmtl)
   }

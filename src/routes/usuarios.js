@@ -13,6 +13,7 @@ export const usuario_router = () => {
     '/usuarios/etapasAsignadas/:user/:serie',
     usuarios.getEtapasAsignadas
   )
+
   //POST
   router.post('/usuarios/verificacion', usuarios.verificacionUsuario) // CON LOG
   return router
