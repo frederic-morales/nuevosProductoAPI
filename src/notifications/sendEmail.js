@@ -83,8 +83,8 @@ export const sendNotificacion = async ({
       Estado
     )
 
-    // return await sendMail('desarrollador2@wellcopharma.com', hmtl)
-    return await sendMail(mails, hmtl)
+    return await sendMail('desarrollador2@wellcopharma.com', hmtl)
+    // return await sendMail(mails, hmtl)
   }
 }
 
@@ -142,8 +142,8 @@ export const notificacionSiguientesEtapas = async ({
 
       const html = mailHtmlEtapaSiguiente(etapa, usuariosAIniciar)
 
-      // return await sendMail('desarrollador2@wellcopharma.com', html)
-      return await sendMail(mails, html)
+      return await sendMail('desarrollador2@wellcopharma.com', html)
+      // return await sendMail(mails, html)
     }
   })
 }

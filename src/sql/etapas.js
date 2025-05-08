@@ -286,7 +286,7 @@ export class Etapas_sql {
         .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
         .input('EtapaId', sql.Int, EtapaId)
 
-      // const result = await request.execute('SP_VERIFICAR_DEPENDENCIAS_ETAPA_V3') - DB_ANTERIOR
+      // const result = await request.execute('SP_VERIFICAR_DEPENDENCIAS_ETAPA_V3') // DB_ANTERIOR
       const result = await request.execute('SP_VERIFICAR_DEPENDENCIAS_ETAPA')
       // console.log(result)
       return result.returnValue
@@ -332,7 +332,7 @@ export class Etapas_sql {
         .input('Usuario', sql.VarChar(20), Usuario)
       const resultado =
         await request.query(`INSERT INTO IND_GRUPOS_USUARIOS_ETAPAS
-          (EtapaId, Usuario) VALUES   (@EtapaId, @Usuario)`)
+          (EtapaId, Usuario) VALUES (@EtapaId, @Usuario)`)
 
       console.log('-------------------------')
       console.log('Asignando usuarios a la etapa', EtapaId)

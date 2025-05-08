@@ -2,6 +2,7 @@ import express from 'express'
 import { producto_router } from './routes/producto.js'
 import { etapa_router } from './routes/etapa.js'
 import { usuario_router } from './routes/usuarios.js'
+import { reportes_router } from './routes/reportes.js'
 import process from 'node:process'
 import cors from 'cors'
 //MIDDLEWARES
@@ -17,6 +18,7 @@ app.use(verifyToken) // Middleware para verificar el token JWT
 app.use('/', producto_router())
 app.use('/', etapa_router())
 app.use('/', usuario_router())
+app.use('/', reportes_router())
 
 const PORT = process.env.PORT || 3000
 

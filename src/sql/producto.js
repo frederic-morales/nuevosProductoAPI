@@ -202,8 +202,7 @@ export class NuevoProducto {
       const request = pool
         .request()
         .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
-
-      // const resultado = await request.execute(`SP_APROBAR_PRODUCTO_V2`)
+      // const resultado = await request.execute(`SP_APROBAR_PRODUCTO_V2`) // DB PRUEBAS
       const resultado = await request.execute(`SP_APROBAR_PRODUCTO`)
       console.log('Aprobando producto...', resultado)
       return resultado

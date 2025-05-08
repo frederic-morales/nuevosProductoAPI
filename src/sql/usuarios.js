@@ -54,7 +54,6 @@ export class Usuarios {
         .request()
         .input('Usuario', sql.VarChar(20), Usuario)
         .input('Password', sql.VarChar(20), Password)
-      // const result = await request.execute('SP_VALIDACION_USUARIO_V2')
       const result = await request.execute('SP_VALIDACION_USUARIO')
       // console.log('Verificacion:', result?.returnValue)
       return result?.returnValue
@@ -71,7 +70,6 @@ export class Usuarios {
         .request()
         .input('Usuario', sql.VarChar(20), Usuario)
 
-      // const result = await request.execute(`SP_USUARIO_ASIG_ETAPAS_V4`)
       const result = await request.execute(`SP_USUARIO_ASIG_ETAPAS`)
       console.log('Verificando si el usuario tiene etapas asignadas...')
       console.log('Usuario:', Usuario)
@@ -111,11 +109,11 @@ export class Usuarios {
         .input('DesarrolloProductoId', sql.Int, DesarrolloProductoId)
       const result = await request.query(`  
           SELECT 
-                DP.DesarrolloProductoId AS ProductoId,
-                DP.Serie, DP.Rechazos, --DP.Usuario, 
-                A.EtapasAsignadasId, A.EtapaId, A.Estado AS AsignacionEstado, A.Correlativo,
-                E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
-                GU.Usuario
+            DP.DesarrolloProductoId AS ProductoId,
+            DP.Serie, DP.Rechazos, --DP.Usuario, 
+            A.EtapasAsignadasId, A.EtapaId, A.Estado AS AsignacionEstado, A.Correlativo,
+            E.Nombre, E.Descripcion, E.FechaCreacion, E.TiempoEstimado,
+            GU.Usuario
           FROM IND_ETAPAS_ASIGNADAS A
             JOIN IND_ETAPAS E ON E.EtapaId = A.EtapaId
             JOIN IND_GRUPOS_USUARIOS_ETAPAS GU ON GU.EtapaId = E.EtapaId
