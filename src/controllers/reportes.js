@@ -16,8 +16,23 @@ export class Reportes {
           .json({ message: 'La serie del producto y usuario son requeridos' })
         return
       }
-      const productos = await reportes.getProductosPorUsuario(usuario, serie)
-      res.status(200).json(productos)
+      const productos = await reportes.getProductosPorUsuario(usuario)
+
+      const productosConEtapas = productos.map(async (prod) => {
+        const desarrolloProductoId = prod?.DesarrolloProductoId
+        const progreso = await reportes.getEtapasPorProducto(
+          desarrolloProductoId
+        )
+
+        return {
+          ...prod,
+          progreso: progreso
+        }
+      })
+      const response = await Promise.all(productosConEtapas)
+      // const etpasProgreso = await reportes.getEtapasPorProducto(usuario, serie)
+      // res.status(200).json(productos)
+      res.status(200).json(response)
     } catch (err) {
       console.error('❌ Error al traer los productos por usuario:', err)
       res

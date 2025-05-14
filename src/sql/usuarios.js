@@ -123,7 +123,6 @@ export class Usuarios {
           AND A.Correlativo IS NULL
           ORDER BY DP.DesarrolloProductoId, A.EtapaId
           `)
-
       console.log('Traendo las etapas del usuario...', Usuario)
       return await result.recordset
     } catch (err) {
