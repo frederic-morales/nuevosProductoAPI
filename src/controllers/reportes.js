@@ -17,8 +17,8 @@ export class Reportes {
         return
       }
       const productos = await reportes.getProductosPorUsuario(usuario)
-
       const productosConEtapas = productos.map(async (prod) => {
+        //TRAE EL ID DEL PRODUCTO
         const desarrolloProductoId = prod?.DesarrolloProductoId
         const progreso = await reportes.getEtapasPorProducto(
           desarrolloProductoId
